@@ -80,3 +80,13 @@ export function useDigestTrigger() {
     mutationFn: api.triggerDigest,
   });
 }
+
+export function useUpdatePhones() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { user_phone?: string; resident_phone?: string }) => api.updatePhones(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["auth", "me"] });
+    },
+  });
+}

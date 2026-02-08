@@ -156,6 +156,13 @@ export const api = {
       { method: "POST" },
     ),
   triggerDigest: () => fetchAPI<Digest>(`/digest/trigger?resident_id=${rid()}`, { method: "POST" }),
+  updatePhones: (data: { user_phone?: string; resident_phone?: string }) => {
+    const token = getStoredToken();
+    return fetchAPI<{ ok: boolean }>(`/auth/phones?token=${token}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // --- Transform helpers ---

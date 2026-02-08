@@ -5,12 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useMe } from "@/hooks/use-api";
+import { useMe, useUpdatePhones } from "@/hooks/use-api";
 
 export default function CaringSettings() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: me } = useMe();
+  const updatePhones = useUpdatePhones();
   const [language, setLanguage] = useState("french");
   const [reminders, setReminders] = useState(true);
   const [companionTone, setCompanionTone] = useState("warm");
@@ -39,7 +40,7 @@ export default function CaringSettings() {
   });
   const [elderForm, setElderForm] = useState(elderInfo);
 
-  // Sync when me data loads
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only re-sync when server data changes
   useEffect(() => {
     if (me) {
       const info = {
@@ -53,18 +54,20 @@ export default function CaringSettings() {
       setElderInfo(info);
       if (!editingElder) setElderForm(info);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me]);
 
   const saveElderInfo = () => {
     setElderInfo(elderForm);
     setEditingElder(false);
+    if (elderForm.phone !== elderInfo.phone) {
+      updatePhones.mutate({ resident_phone: elderForm.phone });
+    }
   };
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-5 pt-14">
-        <button onClick={() => navigate("/profile")} className="mb-6 flex items-center gap-2 text-muted-foreground">
+        <button type="button" onClick={() => navigate("/profile")} className="mb-6 flex items-center gap-2 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-medium">Back</span>
         </button>
@@ -83,11 +86,11 @@ export default function CaringSettings() {
                 <span className="text-sm font-bold text-foreground">Elder information</span>
               </div>
               {!editingElder ? (
-                <button onClick={() => { setElderForm(elderInfo); setEditingElder(true); }} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                <button type="button" onClick={() => { setElderForm(elderInfo); setEditingElder(true); }} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
                   <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               ) : (
-                <button onClick={saveElderInfo} className="p-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                <button type="button" onClick={saveElderInfo} className="p-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                   <Check className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -96,28 +99,28 @@ export default function CaringSettings() {
             {editingElder ? (
               <div className="space-y-2 ml-7">
                 <div>
-                  <label className="text-xs text-muted-foreground">Full name</label>
-                  <input value={elderForm.name} onChange={(e) => setElderForm({ ...elderForm, name: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                  <label htmlFor="elder-name" className="text-xs text-muted-foreground">Full name</label>
+                  <input id="elder-name" value={elderForm.name} onChange={(e) => setElderForm({ ...elderForm, name: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Age</label>
-                  <input value={elderForm.age} onChange={(e) => setElderForm({ ...elderForm, age: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                  <label htmlFor="elder-age" className="text-xs text-muted-foreground">Age</label>
+                  <input id="elder-age" value={elderForm.age} onChange={(e) => setElderForm({ ...elderForm, age: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Phone number</label>
-                  <input value={elderForm.phone} onChange={(e) => setElderForm({ ...elderForm, phone: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                  <label htmlFor="elder-phone" className="text-xs text-muted-foreground">Phone number</label>
+                  <input id="elder-phone" value={elderForm.phone} onChange={(e) => setElderForm({ ...elderForm, phone: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Address</label>
-                  <input value={elderForm.address} onChange={(e) => setElderForm({ ...elderForm, address: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                  <label htmlFor="elder-address" className="text-xs text-muted-foreground">Address</label>
+                  <input id="elder-address" value={elderForm.address} onChange={(e) => setElderForm({ ...elderForm, address: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Health conditions</label>
-                  <input value={elderForm.conditions} onChange={(e) => setElderForm({ ...elderForm, conditions: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                  <label htmlFor="elder-conditions" className="text-xs text-muted-foreground">Health conditions</label>
+                  <input id="elder-conditions" value={elderForm.conditions} onChange={(e) => setElderForm({ ...elderForm, conditions: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Emergency notes</label>
-                  <input value={elderForm.emergencyNote} onChange={(e) => setElderForm({ ...elderForm, emergencyNote: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                  <label htmlFor="elder-emergency" className="text-xs text-muted-foreground">Emergency notes</label>
+                  <input id="elder-emergency" value={elderForm.emergencyNote} onChange={(e) => setElderForm({ ...elderForm, emergencyNote: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
               </div>
             ) : (

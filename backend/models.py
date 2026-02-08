@@ -96,3 +96,8 @@ class AuthResponse(BaseModel):
     resident_id: str
     name: str
     resident_name: str = ""
+
+
+class UpdatePhonesRequest(BaseModel):
+    user_phone: str | None = None
+    resident_phone: str | None = None

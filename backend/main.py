@@ -6,7 +6,7 @@ from config import settings
 from db import supabase
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from models import AuthResponse, LoginRequest, SignupRequest, TriggerCallResponse
+from models import AuthResponse, LoginRequest, SignupRequest, TriggerCallResponse, UpdatePhonesRequest
 from services.auth_service import create_token, hash_password, verify_password
 from services.dust_service import (
     ask_advice,
@@ -166,6 +166,33 @@ async def get_me(token: str):
             "phone": resident.data[0].get("phone", ""),
         },
     }
+
+
+@app.put("/api/auth/phones")
+async def update_phones(req: UpdatePhonesRequest, token: str = ""):
+    """Update the family member's phone and/or the resident's phone."""
+    from services.auth_service import decode_token
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Token required")
+    try:
+        payload = decode_token(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user_id = payload["user_id"]
+    resident_id = payload["resident_id"]
+
+    if req.resident_phone is not None:
+        supabase.table("residents").update({"phone": req.resident_phone}).eq("id", resident_id).execute()
+
+    if req.user_phone is not None:
+        # Get user name to find the family_members record
+        user = supabase.table("users").select("name").eq("id", user_id).execute()
+        if user.data:
+            supabase.table("family_members").update({"phone": req.user_phone}).eq("resident_id", resident_id).eq("name", user.data[0]["name"]).execute()
+
+    return {"ok": True}
 
 
 @app.post("/api/call/trigger", response_model=TriggerCallResponse)
