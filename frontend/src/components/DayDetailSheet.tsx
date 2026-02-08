@@ -23,7 +23,7 @@ interface DayDetailSheetProps {
 
 const statusLabels: Record<StatusLevel, string> = {
   good: "All good",
-  warning: "Attention recommandée",
+  warning: "Attention recommended",
   alert: "Urgent attention needed",
   inactive: "No data",
 };
