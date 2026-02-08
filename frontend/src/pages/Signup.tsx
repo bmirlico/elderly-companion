@@ -42,7 +42,7 @@ export default function Signup() {
         loved_one_phone: lovedOnePhone,
         relationship: relationship || "family",
       });
-      storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id });
+      storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id, resident_name: res.resident_name });
       navigate("/");
     } catch {
       toast({ title: "Signup failed", description: "Could not create account. Email may already be in use.", variant: "destructive" });

@@ -50,9 +50,9 @@ export default function FamilyHome() {
   const { data: nudgesData } = useNudges();
   const callTrigger = useCallTrigger();
 
-  const storedName = getStoredUser()?.name?.split(" ")[0] ?? "";
-  const userName = me?.user.name.split(" ")[0] ?? storedName;
-  const residentName = me?.resident.name.split(" ")[0] ?? "";
+  const stored = getStoredUser();
+  const userName = me?.user.name.split(" ")[0] ?? stored?.name?.split(" ")[0] ?? "";
+  const residentName = me?.resident.name.split(" ")[0] ?? stored?.resident_name?.split(" ")[0] ?? "";
 
   const weekPulse = pulseData ? buildWeekPulse(pulseData) : [];
   const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;

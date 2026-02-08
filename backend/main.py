@@ -91,7 +91,8 @@ async def signup(req: SignupRequest):
 
     token = create_token(user_id, resident_id)
     return AuthResponse(
-        token=token, user_id=user_id, resident_id=resident_id, name=req.name
+        token=token, user_id=user_id, resident_id=resident_id,
+        name=req.name, resident_name=req.loved_one_name,
     )
 
 
@@ -106,12 +107,16 @@ async def login(req: LoginRequest):
     if not verify_password(req.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    resident = supabase.table("residents").select("name").eq("id", user["resident_id"]).execute()
+    r_name = resident.data[0]["name"] if resident.data else ""
+
     token = create_token(user["id"], user["resident_id"])
     return AuthResponse(
         token=token,
         user_id=user["id"],
         resident_id=user["resident_id"],
         name=user["name"],
+        resident_name=r_name,
     )
 
 

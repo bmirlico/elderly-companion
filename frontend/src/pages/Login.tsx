@@ -17,7 +17,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await authApi.login({ email, password });
-      storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id });
+      storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id, resident_name: res.resident_name });
       navigate("/");
     } catch {
       toast({ title: "Login failed", description: "Invalid email or password", variant: "destructive" });

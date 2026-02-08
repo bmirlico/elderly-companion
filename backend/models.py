@@ -95,3 +95,4 @@ class AuthResponse(BaseModel):
     user_id: str
     resident_id: str
     name: str
+    resident_name: str = ""

@@ -4,12 +4,12 @@ export function getStoredToken(): string | null {
   return localStorage.getItem("veille_token");
 }
 
-export function getStoredUser(): { name: string; resident_id: string; user_id: string } | null {
+export function getStoredUser(): { name: string; resident_id: string; user_id: string; resident_name?: string } | null {
   const raw = localStorage.getItem("veille_user");
   return raw ? JSON.parse(raw) : null;
 }
 
-export function storeAuth(token: string, user: { name: string; resident_id: string; user_id: string }) {
+export function storeAuth(token: string, user: { name: string; resident_id: string; user_id: string; resident_name?: string }) {
   localStorage.setItem("veille_token", token);
   localStorage.setItem("veille_user", JSON.stringify(user));
 }
@@ -37,6 +37,7 @@ export interface AuthResponse {
   user_id: string;
   resident_id: string;
   name: string;
+  resident_name: string;
 }
 
 // --- Types matching backend responses ---
