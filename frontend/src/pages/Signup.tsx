@@ -26,8 +26,8 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lovedOneName || !lovedOneAge) {
-      toast({ title: "Missing info", description: "Please fill in your loved one's name and age", variant: "destructive" });
+    if (!lovedOneName || !lovedOneAge || !lovedOnePhone || !userPhone) {
+      toast({ title: "Missing info", description: "Please fill in all required fields including phone numbers", variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -123,6 +123,7 @@ export default function Signup() {
                   placeholder="+33 6 12 34 56 78"
                   value={userPhone}
                   onChange={(e) => setUserPhone(e.target.value)}
+                  required
                   className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
@@ -181,6 +182,7 @@ export default function Signup() {
                   placeholder="+33 6 98 76 54 32"
                   value={lovedOnePhone}
                   onChange={(e) => setLovedOnePhone(e.target.value)}
+                  required
                   className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </div>
