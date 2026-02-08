@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Phone, Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useMe } from "@/hooks/use-api";
 
 interface Contact {
   id: string;
@@ -11,16 +12,34 @@ interface Contact {
   phone: string;
 }
 
-const initialContacts: Contact[] = [
+const defaultContacts: Contact[] = [
   { id: "1", name: "Dr. Martin", role: "General Practitioner", phone: "+33 1 23 45 67 89" },
   { id: "2", name: "Pharmacie Centrale", role: "Pharmacy", phone: "+33 1 98 76 54 32" },
   { id: "3", name: "SAMU", role: "Emergency", phone: "15" },
-  { id: "4", name: "Sophie Dupont", role: "Daughter", phone: "+33 6 12 34 56 78" },
 ];
 
 export default function EmergencyContacts() {
   const navigate = useNavigate();
-  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
+  const { data: me } = useMe();
+  const [contacts, setContacts] = useState<Contact[]>(defaultContacts);
+
+  // Add the logged-in user as a contact once data loads
+  useEffect(() => {
+    if (me) {
+      setContacts((prev) => {
+        if (prev.some((c) => c.id === "me")) return prev;
+        return [
+          ...prev,
+          {
+            id: "me",
+            name: me.user.name,
+            role: me.user.relationship || "Family",
+            phone: me.user.phone || "Not set",
+          },
+        ];
+      });
+    }
+  }, [me]);
   const [editing, setEditing] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: "", role: "", phone: "" });

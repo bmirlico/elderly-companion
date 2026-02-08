@@ -85,8 +85,8 @@ export interface Digest {
 // --- API functions ---
 
 export interface MeResponse {
-  user: { id: string; name: string; email: string };
-  resident: { id: string; name: string; age: number | null };
+  user: { id: string; name: string; email: string; phone: string; relationship: string };
+  resident: { id: string; name: string; age: number | null; phone: string };
 }
 
 export const authApi = {

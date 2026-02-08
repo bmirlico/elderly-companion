@@ -1,9 +1,15 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useMe } from "@/hooks/use-api";
 
 export default function PersonalProfile() {
   const navigate = useNavigate();
+  const { data: me } = useMe();
+
+  const userName = me?.user.name ?? "...";
+  const userEmail = me?.user.email ?? "...";
+  const userPhone = me?.user.phone || "Not set";
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -17,15 +23,14 @@ export default function PersonalProfile() {
           <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-3">
             <User className="w-9 h-9 text-primary" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">Sophie Dupont</h1>
+          <h1 className="text-xl font-bold text-foreground">{userName}</h1>
           <p className="text-sm text-muted-foreground">Caregiver</p>
         </motion.div>
 
         <div className="space-y-4">
           {[
-            { icon: Mail, label: "Email", value: "sophie.dupont@email.com" },
-            { icon: Phone, label: "Phone", value: "+33 6 12 34 56 78" },
-            { icon: MapPin, label: "Location", value: "Paris, France" },
+            { icon: Mail, label: "Email", value: userEmail },
+            { icon: Phone, label: "Phone", value: userPhone },
           ].map((item, i) => (
             <motion.div
               key={item.label}

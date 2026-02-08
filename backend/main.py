@@ -136,16 +136,29 @@ async def get_me(token: str):
     if not user.data or not resident.data:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Get family member record for user's phone + relationship
+    fm = (
+        supabase.table("family_members")
+        .select("*")
+        .eq("resident_id", payload["resident_id"])
+        .eq("name", user.data[0]["name"])
+        .execute()
+    )
+    fm_data = fm.data[0] if fm.data else {}
+
     return {
         "user": {
             "id": user.data[0]["id"],
             "name": user.data[0]["name"],
             "email": user.data[0]["email"],
+            "phone": fm_data.get("phone", ""),
+            "relationship": fm_data.get("relationship", ""),
         },
         "resident": {
             "id": resident.data[0]["id"],
             "name": resident.data[0]["name"],
             "age": resident.data[0].get("age"),
+            "phone": resident.data[0].get("phone", ""),
         },
     }
 

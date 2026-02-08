@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Globe, Clock, Heart, Pill, User, Pencil, Check, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useMe } from "@/hooks/use-api";
 
 export default function CaringSettings() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { data: me } = useMe();
   const [language, setLanguage] = useState("french");
   const [reminders, setReminders] = useState(true);
   const [companionTone, setCompanionTone] = useState("warm");
@@ -28,13 +30,29 @@ export default function CaringSettings() {
   // Elder info editing
   const [editingElder, setEditingElder] = useState(false);
   const [elderInfo, setElderInfo] = useState({
-    name: "Marie Dupont",
-    age: "78",
-    address: "15 Rue de la Liberté, 75011 Paris",
-    conditions: "Hypertension, mild arthritis",
-    emergencyNote: "Allergic to penicillin",
+    name: me?.resident.name ?? "...",
+    age: me?.resident.age?.toString() ?? "",
+    address: "",
+    conditions: "",
+    emergencyNote: "",
   });
   const [elderForm, setElderForm] = useState(elderInfo);
+
+  // Sync when me data loads
+  useEffect(() => {
+    if (me) {
+      const info = {
+        name: me.resident.name,
+        age: me.resident.age?.toString() ?? "",
+        address: elderInfo.address,
+        conditions: elderInfo.conditions,
+        emergencyNote: elderInfo.emergencyNote,
+      };
+      setElderInfo(info);
+      if (!editingElder) setElderForm(info);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me]);
 
   const saveElderInfo = () => {
     setElderInfo(elderForm);
@@ -52,7 +70,7 @@ export default function CaringSettings() {
         <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xl font-bold text-foreground mb-1">
           Who I am caring about
         </motion.h1>
-        <p className="text-sm text-muted-foreground mb-6">Adjust preferences for {elderInfo.name.split(" ")[0]}</p>
+        <p className="text-sm text-muted-foreground mb-6">Adjust preferences for {me?.resident.name.split(" ")[0] ?? "..."}</p>
 
         <div className="space-y-4">
           {/* Elder information card */}
