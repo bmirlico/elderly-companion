@@ -38,7 +38,7 @@ export default function Companion() {
       <div className="max-w-md mx-auto px-5 pt-14 flex-1 flex flex-col">
         {/* Header */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground">Veille</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">Elderly</h1>
           <p className="text-sm text-muted-foreground mt-1">Your daily companion</p>
         </motion.div>
 
