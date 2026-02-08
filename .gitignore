@@ -1,19 +1,19 @@
 # Backend
-veille-backend/.env
-veille-backend/__pycache__/
-veille-backend/*.pyc
-veille-backend/.venv/
-veille-backend/venv/
-veille-backend/*.egg-info/
-veille-backend/dist/
-veille-backend/build/
+backend/.env
+backend/__pycache__/
+backend/*.pyc
+backend/.venv/
+backend/venv/
+backend/*.egg-info/
+backend/dist/
+backend/build/
 .venv/
 
 # Frontend
-kindred-ear/node_modules/
-kindred-ear/dist/
-kindred-ear/dist-ssr/
-kindred-ear/*.local
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
 
 # Spec (private)
 BACKEND-SPEC.md

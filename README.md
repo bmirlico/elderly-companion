@@ -49,13 +49,13 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    kindred-ear (Frontend)                 │
+│                    frontend/ (Frontend)                 │
 │          React 18 + TypeScript + Tailwind + Shadcn       │
 │         React Query for API state management             │
 └─────────────────────────┬────────────────────────────────┘
                           │ Vite Proxy /api → :8000
 ┌─────────────────────────▼────────────────────────────────┐
-│                  veille-backend (Backend)                 │
+│                  backend/ (Backend)                 │
 │                   FastAPI + Python 3.13                   │
 │                                                          │
 │  ┌─────────┐  ┌──────────┐  ┌────────┐  ┌───────────┐   │
@@ -129,12 +129,12 @@ cd elderly-companion
 
 ### 2️⃣ Set up the database
 
-Run `veille-backend/schema.sql` in the Supabase SQL Editor. This creates all tables and seeds demo data.
+Run `backend/schema.sql` in the Supabase SQL Editor. This creates all tables and seeds demo data.
 
 ### 3️⃣ Start the backend
 
 ```bash
-cd veille-backend
+cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -164,7 +164,7 @@ Set the ngrok URL as `SERVER_BASE_URL` in your `.env`.
 
 ## 🔧 Environment Variables
 
-Create a `.env` file in `veille-backend/`:
+Create a `.env` file in `backend/`:
 
 ```env
 # 📞 Twilio
@@ -339,7 +339,7 @@ Two separate Dust AI agents:
 ```
 elderly-companion/
 │
-├── veille-backend/                 # 🐍 FastAPI Backend
+├── backend/                 # 🐍 FastAPI Backend
 │   ├── main.py                     # App routes + WebSocket endpoint
 │   ├── config.py                   # Environment configuration
 │   ├── db.py                       # Supabase client
@@ -355,7 +355,7 @@ elderly-companion/
 │   └── ws/
 │       └── call_handler.py         # 🔄 Twilio WebSocket state machine
 │
-├── kindred-ear/                    # ⚛️ React Frontend
+├── frontend/                    # ⚛️ React Frontend
 │   ├── src/
 │   │   ├── api/client.ts           # API client + types + transforms
 │   │   ├── hooks/use-api.ts        # React Query hooks
