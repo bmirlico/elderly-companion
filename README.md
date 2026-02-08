@@ -183,6 +183,7 @@ DUST_API_KEY=xxxxx
 DUST_WORKSPACE_ID=xxxxx
 DUST_AGENT_ID=xxxxx               # Per-call analysis agent
 DUST_DIGEST_AGENT_ID=xxxxx        # Weekly digest agent
+DUST_QA_AGENT_ID=xxxxx            # General advice agent
 
 # 🗄️ Supabase
 SUPABASE_URL=https://xxxxx.supabase.co
@@ -376,47 +377,12 @@ elderly-companion/
 
 ---
 
-## 🚀 Production Deployment
+## 🚀 Production
 
-### Backend on Render
+The app is deployed on [Render](https://render.com):
 
-1. Go to [render.com](https://render.com) > **New** > **Web Service**
-2. Connect your GitHub repo (`bmirlico/elderly-companion`)
-3. Configure:
-   - **Root Directory**: `backend`
-   - **Runtime**: Python 3
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-4. Add all environment variables from `.env.example` in the **Environment** tab
-5. Set `SERVER_BASE_URL` to your Render URL (e.g. `elderly-backend.onrender.com`)
-6. Deploy
-
-### Frontend on Render
-
-1. Go to [render.com](https://render.com) > **New** > **Static Site**
-2. Connect the same GitHub repo
-3. Configure:
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm install && npm run build`
-   - **Publish Directory**: `dist`
-4. Add environment variable: `VITE_API_URL` = your backend Render URL
-5. Deploy
-
-### Custom Domain (elderly.cc)
-
-1. Purchase `elderly.cc` from your domain registrar
-2. In Render > your static site > **Custom Domains** > add `elderly.cc`
-3. Add the DNS records Render provides (CNAME or A record) at your registrar
-4. Enable HTTPS (automatic via Render)
-
-### Post-Deploy Checklist
-
-- [ ] Update `SERVER_BASE_URL` in backend env to Render URL
-- [ ] Update Twilio webhook URL to point to the Render backend
-- [ ] Update frontend `vite.config.ts` proxy to point to production backend URL (or use `VITE_API_URL`)
-- [ ] Run `schema.sql` in Supabase if not done
-- [ ] Test `/health` endpoint
-- [ ] Create an account and test the full flow
+- **Frontend**: [elderly.cc](https://elderly.cc) (Static Site)
+- **Backend**: Web Service (Python 3)
 
 ---
 
