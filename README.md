@@ -1,8 +1,8 @@
-# 🤝 Kindred Ear — AI Phone Companion for Elderly People
+# 🤝 Elderly — AI Phone Companion for Elderly People
 
 > _Because staying close doesn't require being nearby._
 
-**Kindred Ear** is an AI-powered phone companion that calls elderly people daily, has warm conversations with them, then analyzes the call to keep their family informed — all through a beautiful mobile dashboard.
+**Elderly** is an AI-powered phone companion that calls elderly people daily, has warm conversations with them, then analyzes the call to keep their family informed — all through a beautiful mobile dashboard.
 
 ---
 
