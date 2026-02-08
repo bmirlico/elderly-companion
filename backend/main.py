@@ -188,7 +188,7 @@ async def twilio_stream(websocket: WebSocket):
 @app.get("/api/dashboard/pulse")
 async def get_pulse(resident_id: str = ""):
     """Get last 7 days of analyses for the dashboard."""
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
     result = (
         supabase.table("analyses")
         .select("*")
@@ -203,7 +203,7 @@ async def get_pulse(resident_id: str = ""):
 @app.get("/api/dashboard/today")
 async def get_today(resident_id: str = ""):
     """Get today's analysis (latest)."""
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
     result = (
         supabase.table("analyses")
         .select("*")
@@ -218,7 +218,7 @@ async def get_today(resident_id: str = ""):
 @app.get("/api/dashboard/call-status")
 async def get_call_status(resident_id: str = ""):
     """Get the most recent call status."""
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
     result = (
         supabase.table("calls")
         .select("*")
@@ -296,7 +296,7 @@ async def simulate_call(scenario: str = "green", resident_id: str = ""):
     transcript = scenarios[scenario]
 
     # Create a fake call record
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
     from datetime import datetime, timezone
 
     call_result = (
@@ -333,7 +333,7 @@ async def get_report_insights(resident_id: str = ""):
     """Generate behavioral insights + topics from recent analyses and calls."""
     from collections import Counter
 
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
 
     # Fetch last 7 analyses
     analyses_result = (
@@ -450,7 +450,7 @@ async def get_report_insights(resident_id: str = ""):
 @app.get("/api/dashboard/nudges")
 async def get_nudges(resident_id: str = ""):
     """Generate smart nudges from recent analyses signals/tags."""
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
     result = (
         supabase.table("analyses")
         .select("*")
@@ -533,7 +533,7 @@ async def get_nudges(resident_id: str = ""):
 @app.post("/api/digest/trigger")
 async def trigger_digest(resident_id: str = ""):
     """Trigger a weekly digest: analyzes last 7 days and SMS the family."""
-    rid = resident_id or settings.resident_id
+    rid = resident_id or ""
     digest = await trigger_weekly_digest(rid)
     if not digest:
         raise HTTPException(status_code=500, detail="Failed to generate weekly digest")
