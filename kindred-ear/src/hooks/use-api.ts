@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, authApi, getStoredToken } from "@/api/client";
+import { api, authApi, getStoredToken, type Nudge } from "@/api/client";
 
 export function useMe() {
   return useQuery({
@@ -22,6 +22,14 @@ export function useDashboardPulse() {
   return useQuery({
     queryKey: ["dashboard", "pulse"],
     queryFn: api.getDashboardPulse,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useNudges() {
+  return useQuery<Nudge[]>({
+    queryKey: ["dashboard", "nudges"],
+    queryFn: api.getNudges,
     refetchInterval: 30_000,
   });
 }

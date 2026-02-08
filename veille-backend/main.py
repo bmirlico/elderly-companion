@@ -244,6 +244,78 @@ async def simulate_call(scenario: str = "green", resident_id: str = ""):
     return {"status": "analysis triggered", "scenario": scenario, "call_id": call_id}
 
 
+@app.get("/api/dashboard/nudges")
+async def get_nudges(resident_id: str = ""):
+    """Generate smart nudges from recent analyses signals/tags."""
+    rid = resident_id or settings.resident_id
+    result = (
+        supabase.table("analyses")
+        .select("*")
+        .eq("resident_id", rid)
+        .order("created_at", desc=True)
+        .limit(7)
+        .execute()
+    )
+
+    nudges: list[dict] = []
+    if not result.data:
+        return nudges
+
+    # Collect signals and tags across recent analyses
+    all_signals: list[dict] = []
+    all_tags: list[str] = []
+    alert_count = {"yellow": 0, "red": 0}
+    for a in result.data:
+        for s in (a.get("signals") or []):
+            all_signals.append(s)
+        all_tags.extend(a.get("tags") or [])
+        if a["alert_level"] in alert_count:
+            alert_count[a["alert_level"]] += 1
+
+    # Group signals by type and pick high-severity ones
+    from collections import Counter
+    tag_counts = Counter(all_tags)
+    for tag, count in tag_counts.most_common(3):
+        if count >= 2:
+            nudges.append({
+                "text": f'"{tag}" mentioned {count} times this week',
+                "suggestion": "Maybe ask about it on your next call?",
+            })
+
+    # Surface concerning signals
+    for s in all_signals:
+        if s.get("severity", 0) >= 7:
+            nudges.append({
+                "text": s.get("detail", "Something concerning detected"),
+                "suggestion": "Worth checking in about this",
+            })
+            if len(nudges) >= 4:
+                break
+
+    # Alert-level nudge
+    if alert_count["red"] > 0:
+        nudges.append({
+            "text": f'{alert_count["red"]} concerning conversation(s) this week',
+            "suggestion": "Consider calling soon",
+        })
+    elif alert_count["yellow"] > 0:
+        nudges.append({
+            "text": f'{alert_count["yellow"]} conversation(s) felt a bit off this week',
+            "suggestion": "Nothing urgent, but worth staying attentive",
+        })
+
+    # Family messages as nudges
+    for a in result.data:
+        if a.get("family_message") and a["alert_level"] != "green":
+            nudges.append({
+                "text": a["family_message"],
+                "suggestion": "From today's conversation analysis",
+            })
+            break
+
+    return nudges[:5]
+
+
 @app.post("/api/digest/trigger")
 async def trigger_digest(resident_id: str = ""):
     """Trigger a weekly digest: analyzes last 7 days and SMS the family."""

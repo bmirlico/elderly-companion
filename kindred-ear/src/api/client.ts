@@ -112,10 +112,16 @@ function rid() {
   return getStoredUser()?.resident_id ?? "";
 }
 
+export interface Nudge {
+  text: string;
+  suggestion: string;
+}
+
 export const api = {
   getDashboardToday: () => fetchAPI<Analysis | null>(`/dashboard/today?resident_id=${rid()}`),
   getDashboardPulse: () => fetchAPI<Analysis[]>(`/dashboard/pulse?resident_id=${rid()}`),
   getCallStatus: () => fetchAPI<Call | null>(`/dashboard/call-status?resident_id=${rid()}`),
+  getNudges: () => fetchAPI<Nudge[]>(`/dashboard/nudges?resident_id=${rid()}`),
   triggerCall: () => fetchAPI<{ call_id: string; status: string }>(`/call/trigger?resident_id=${rid()}`, { method: "POST" }),
   simulateCall: (scenario: string) =>
     fetchAPI<{ status: string; scenario: string; call_id: string }>(
