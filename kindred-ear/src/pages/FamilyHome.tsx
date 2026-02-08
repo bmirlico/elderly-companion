@@ -4,7 +4,7 @@ import { PulseCard } from "@/components/PulseCard";
 import { NudgeCard } from "@/components/NudgeCard";
 import { WeekPulseStrip } from "@/components/WeekPulseStrip";
 import { DayDetailSheet } from "@/components/DayDetailSheet";
-import { Search, Bell } from "lucide-react";
+import { HeartHandshake } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDashboardToday, useDashboardPulse, useMe, useCallTrigger, useNudges } from "@/hooks/use-api";
 import { alertToStatus, formatLastTalked, analysisToDay, type Analysis } from "@/api/client";
@@ -74,14 +74,8 @@ export default function FamilyHome() {
             <h1 className="text-xl font-extrabold text-foreground">Hello, {userName}</h1>
             <p className="text-sm text-muted-foreground">Here's how {residentName} is doing</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-              <Search className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <button className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center relative">
-              <Bell className="w-4 h-4 text-muted-foreground" />
-              {status === "alert" && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-status-alert" />}
-            </button>
+          <div className="w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center animate-pulse-gentle">
+            <HeartHandshake className="w-6 h-6 text-primary" />
           </div>
         </motion.div>
 
