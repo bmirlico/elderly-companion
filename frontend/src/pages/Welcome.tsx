@@ -15,7 +15,7 @@ export default function Welcome() {
         <div className="w-16 h-16 rounded-2xl bg-primary mx-auto mb-4 flex items-center justify-center">
           <Heart className="w-8 h-8 text-primary-foreground" />
         </div>
-        <h1 className="text-3xl font-extrabold text-foreground">Veille</h1>
+        <h1 className="text-3xl font-extrabold text-foreground">Elderly</h1>
         <p className="text-muted-foreground mt-2 text-sm max-w-xs mx-auto">
           The companion that catches what your loved ones won't tell you.
         </p>
