@@ -14,7 +14,7 @@ export function useDashboardToday() {
   return useQuery({
     queryKey: ["dashboard", "today"],
     queryFn: api.getDashboardToday,
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
   });
 }
 
@@ -22,7 +22,7 @@ export function useDashboardPulse() {
   return useQuery({
     queryKey: ["dashboard", "pulse"],
     queryFn: api.getDashboardPulse,
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
   });
 }
 
@@ -30,7 +30,7 @@ export function useNudges() {
   return useQuery<Nudge[]>({
     queryKey: ["dashboard", "nudges"],
     queryFn: api.getNudges,
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
   });
 }
 
@@ -38,7 +38,7 @@ export function useReportInsights() {
   return useQuery<ReportInsights>({
     queryKey: ["dashboard", "report-insights"],
     queryFn: api.getReportInsights,
-    refetchInterval: 30_000,
+    refetchInterval: 10_000,
   });
 }
 
