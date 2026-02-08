@@ -7,6 +7,7 @@ veille-backend/venv/
 veille-backend/*.egg-info/
 veille-backend/dist/
 veille-backend/build/
+.venv/
 
 # Frontend
 kindred-ear/node_modules/

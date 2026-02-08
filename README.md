@@ -145,7 +145,7 @@ uvicorn main:app --reload --port 8000
 ### 4️⃣ Start the frontend
 
 ```bash
-cd kindred-ear
+cd frontend
 npm install
 npm run dev
 ```
