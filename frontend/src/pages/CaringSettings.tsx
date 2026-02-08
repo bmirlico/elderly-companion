@@ -32,6 +32,7 @@ export default function CaringSettings() {
   const [elderInfo, setElderInfo] = useState({
     name: me?.resident.name ?? "...",
     age: me?.resident.age?.toString() ?? "",
+    phone: me?.resident.phone ?? "",
     address: "",
     conditions: "",
     emergencyNote: "",
@@ -44,6 +45,7 @@ export default function CaringSettings() {
       const info = {
         name: me.resident.name,
         age: me.resident.age?.toString() ?? "",
+        phone: me.resident.phone ?? "",
         address: elderInfo.address,
         conditions: elderInfo.conditions,
         emergencyNote: elderInfo.emergencyNote,
@@ -102,6 +104,10 @@ export default function CaringSettings() {
                   <input value={elderForm.age} onChange={(e) => setElderForm({ ...elderForm, age: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
                 <div>
+                  <label className="text-xs text-muted-foreground">Phone number</label>
+                  <input value={elderForm.phone} onChange={(e) => setElderForm({ ...elderForm, phone: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
+                </div>
+                <div>
                   <label className="text-xs text-muted-foreground">Address</label>
                   <input value={elderForm.address} onChange={(e) => setElderForm({ ...elderForm, address: e.target.value })} className="w-full text-sm bg-background rounded-lg px-3 py-2 outline-none text-foreground border border-border" />
                 </div>
@@ -118,6 +124,7 @@ export default function CaringSettings() {
               <div className="space-y-1.5 ml-7">
                 <p className="text-sm font-medium text-foreground">{elderInfo.name}</p>
                 <p className="text-xs text-muted-foreground">Age: {elderInfo.age}</p>
+                {elderInfo.phone && <p className="text-xs text-muted-foreground">Phone: {elderInfo.phone}</p>}
                 <p className="text-xs text-muted-foreground">{elderInfo.address}</p>
                 <p className="text-xs text-muted-foreground">Conditions: {elderInfo.conditions}</p>
                 <p className="text-xs text-muted-foreground">⚠️ {elderInfo.emergencyNote}</p>
