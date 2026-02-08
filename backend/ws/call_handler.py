@@ -48,12 +48,13 @@ class CallSession:
         self.stream_sid: Optional[str] = None
         self.call_sid: Optional[str] = None
         self.call_id: Optional[str] = None
+        self.resident_id: Optional[str] = None
         self.stt_session = STTSession()
         self.transcript: list[dict] = []
         self.conversation_history: list[dict] = [
             {"role": "system", "content": COMPANION_SYSTEM_PROMPT}
         ]
-        self.resident_name: str = "Marie"
+        self.resident_name: str = ""
         self.turn_count: int = 0
         self.call_start_time: Optional[float] = None
         self._is_active: bool = False
@@ -84,7 +85,8 @@ class CallSession:
         )
         if result.data:
             self.call_id = result.data[0]["id"]
-            resident_id = result.data[0]["resident_id"]
+            self.resident_id = result.data[0]["resident_id"]
+            resident_id = self.resident_id
             supabase.table("calls").update({"status": "in_progress"}).eq(
                 "id", self.call_id
             ).execute()
@@ -146,10 +148,10 @@ class CallSession:
             ).eq("id", self.call_id).execute()
 
         # Trigger post-call analysis
-        if self.transcript:
+        if self.transcript and self.resident_id:
             await trigger_post_call_analysis(
                 call_id=self.call_id or "unknown",
-                resident_id=settings.resident_id,
+                resident_id=self.resident_id,
                 transcript=self.transcript,
                 turn_count=self.turn_count,
                 duration_seconds=duration,
