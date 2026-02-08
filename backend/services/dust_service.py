@@ -138,10 +138,11 @@ Respond with ONLY a raw JSON object (no markdown, no explanation), with this exa
         ).execute()
 
         # Send SMS to family if yellow or red
-        if analysis["alert_level"] in ("yellow", "red") and settings.family_phone:
+        if analysis["alert_level"] in ("yellow", "red"):
             family_msg = analysis.get("family_message")
-            if family_msg:
-                _send_family_sms(family_msg)
+            family_phone = _get_family_phone(resident_id)
+            if family_msg and family_phone:
+                _send_family_sms(family_msg, family_phone)
 
     except httpx.HTTPStatusError as e:
         logger.error(
@@ -242,8 +243,9 @@ Analyze trends across the week. Respond with ONLY a raw JSON object (no markdown
         logger.info(f"Weekly digest: trend={digest.get('trend')}")
 
         # Send SMS to family
-        if settings.family_phone and digest.get("family_message"):
-            _send_family_sms(digest["family_message"])
+        family_phone = _get_family_phone(resident_id)
+        if family_phone and digest.get("family_message"):
+            _send_family_sms(digest["family_message"], family_phone)
 
         return digest
 
@@ -319,7 +321,16 @@ async def ask_advice(question: str) -> str | None:
         return None
 
 
-def _send_family_sms(message: str):
+def _get_family_phone(resident_id: str) -> str | None:
+    """Look up the family member's phone number from the database."""
+    result = supabase.table("family_members").select("phone").eq("resident_id", resident_id).limit(1).execute()
+    if result.data and result.data[0].get("phone"):
+        return result.data[0]["phone"]
+    # Fall back to env var if no DB record
+    return settings.family_phone or None
+
+
+def _send_family_sms(message: str, to_phone: str):
     """Send an SMS alert to the family member via Twilio."""
     try:
         from services.twilio_service import twilio_client
@@ -327,8 +338,8 @@ def _send_family_sms(message: str):
         twilio_client.messages.create(
             body=message,
             from_=settings.twilio_phone_number,
-            to=settings.family_phone,
+            to=to_phone,
         )
-        logger.info(f"Family SMS sent to {settings.family_phone}")
+        logger.info(f"Family SMS sent to {to_phone}")
     except Exception as e:
         logger.error(f"Failed to send family SMS: {e}", exc_info=True)

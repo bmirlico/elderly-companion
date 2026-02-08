@@ -27,24 +27,33 @@ def end_call(call_sid: str):
     logger.info(f"Call ended via API: SID={call_sid}")
 
 
-def create_outbound_call() -> dict:
+def create_outbound_call(resident_id: str = "") -> dict:
     """
     Create an outbound Twilio call to the resident and store the call record in Supabase.
+    Looks up the resident's phone number from the database.
 
     Returns dict with 'call_id' (our UUID) and 'twilio_call_sid'.
     """
+    rid = resident_id or settings.resident_id
+
+    # Look up resident phone from DB
+    resident = supabase.table("residents").select("phone").eq("id", rid).execute()
+    if not resident.data or not resident.data[0].get("phone"):
+        raise ValueError(f"No phone number found for resident {rid}")
+    resident_phone = resident.data[0]["phone"]
+
     twiml = build_stream_twiml()
 
     call = twilio_client.calls.create(
-        to=settings.resident_phone,
+        to=resident_phone,
         from_=settings.twilio_phone_number,
         twiml=twiml,
     )
-    logger.info(f"Twilio call created: SID={call.sid}, to={settings.resident_phone}")
+    logger.info(f"Twilio call created: SID={call.sid}, to={resident_phone}")
 
     now = datetime.now(timezone.utc).isoformat()
     result = supabase.table("calls").insert({
-        "resident_id": settings.resident_id,
+        "resident_id": rid,
         "twilio_call_sid": call.sid,
         "status": "pending",
         "started_at": now,

@@ -169,10 +169,11 @@ async def get_me(token: str):
 
 
 @app.post("/api/call/trigger", response_model=TriggerCallResponse)
-async def trigger_call():
+async def trigger_call(resident_id: str = ""):
     """Trigger an outbound call to the resident."""
     try:
-        result = await asyncio.to_thread(create_outbound_call)
+        rid = resident_id or ""
+        result = await asyncio.to_thread(create_outbound_call, rid)
         return TriggerCallResponse(
             call_id=str(result["call_id"]),
             twilio_call_sid=result["twilio_call_sid"],
