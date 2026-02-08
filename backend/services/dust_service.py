@@ -257,6 +257,68 @@ Analyze trends across the week. Respond with ONLY a raw JSON object (no markdown
         return None
 
 
+def _extract_text_response(conversation: dict) -> str | None:
+    """Extract the agent's text response (not JSON) from a Dust conversation."""
+    for message_group in conversation.get("content", []):
+        for msg in message_group:
+            if msg.get("type") == "agent_message" and msg.get("status") == "succeeded":
+                return msg.get("content", "").strip()
+    return None
+
+
+async def ask_advice(question: str) -> str | None:
+    """
+    Ask a general caregiving question to a Dust advice agent.
+    The agent can use web search and reasoning to give tips and advice.
+    """
+    if (
+        not settings.dust_api_key
+        or not settings.dust_workspace_id
+        or not settings.dust_qa_agent_id
+    ):
+        logger.warning("Dust advice agent not configured")
+        return None
+
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(
+                f"{DUST_API_BASE}/w/{settings.dust_workspace_id}/assistant/conversations",
+                headers={
+                    "Authorization": f"Bearer {settings.dust_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "message": {
+                        "content": question,
+                        "mentions": [{"configurationId": settings.dust_qa_agent_id}],
+                        "context": {
+                            "username": "veille-backend",
+                            "timezone": "Europe/Paris",
+                            "fullName": "Veille System",
+                            "email": "system@veille.app",
+                            "origin": "api",
+                        },
+                    },
+                    "blocking": True,
+                    "title": f"Advice — {question[:30]}",
+                },
+            )
+            resp.raise_for_status()
+
+        data = resp.json()
+        answer = _extract_text_response(data.get("conversation", {}))
+        if answer:
+            logger.info(f"Advice for '{question[:40]}': {answer[:100]}...")
+        return answer
+
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Dust advice API error: {e.response.status_code} — {e.response.text[:300]}")
+        return None
+    except Exception as e:
+        logger.error(f"Dust advice failed: {e}", exc_info=True)
+        return None
+
+
 def _send_family_sms(message: str):
     """Send an SMS alert to the family member via Twilio."""
     try:

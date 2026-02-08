@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     dust_workspace_id: str = ""
     dust_agent_id: str = ""
     dust_digest_agent_id: str = ""
+    dust_qa_agent_id: str = ""
 
     # Supabase
     supabase_url: str

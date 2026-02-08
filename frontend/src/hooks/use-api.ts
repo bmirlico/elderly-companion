@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, authApi, getStoredToken, type Nudge } from "@/api/client";
+import { api, authApi, getStoredToken, type Nudge, type ReportInsights } from "@/api/client";
 
 export function useMe() {
   return useQuery({
@@ -34,6 +34,14 @@ export function useNudges() {
   });
 }
 
+export function useReportInsights() {
+  return useQuery<ReportInsights>({
+    queryKey: ["dashboard", "report-insights"],
+    queryFn: api.getReportInsights,
+    refetchInterval: 30_000,
+  });
+}
+
 export function useCallStatus() {
   return useQuery({
     queryKey: ["call", "status"],
@@ -58,6 +66,12 @@ export function useSimulateCall() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
+  });
+}
+
+export function useAskAdvice() {
+  return useMutation({
+    mutationFn: (question: string) => api.askAdvice(question),
   });
 }
 

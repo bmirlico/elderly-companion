@@ -1,15 +1,29 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Globe, Clock, Heart, Pill, User, Pencil, Check } from "lucide-react";
+import { ArrowLeft, Globe, Clock, Heart, Pill, User, Pencil, Check, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CaringSettings() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [language, setLanguage] = useState("french");
   const [reminders, setReminders] = useState(true);
   const [companionTone, setCompanionTone] = useState("warm");
+  const [callFrequency, setCallFrequency] = useState("daily");
+
+  const handleFrequencyChange = (value: string) => {
+    setCallFrequency(value);
+    const labels: Record<string, string> = {
+      daily: "Every day at 10:00 AM",
+      twice: "Twice a day (10 AM & 6 PM)",
+      weekly: "Once a week (Monday 10 AM)",
+      manual: "Manual only (no scheduled calls)",
+    };
+    toast({ title: "Call schedule updated", description: labels[value] });
+  };
 
   // Elder info editing
   const [editingElder, setEditingElder] = useState(false);
@@ -131,7 +145,23 @@ export default function CaringSettings() {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }} className="rounded-xl bg-secondary/30 p-4">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }} className="rounded-xl bg-secondary/30 p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <Phone className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground flex-1">Call frequency</span>
+            </div>
+            <Select value={callFrequency} onValueChange={handleFrequencyChange}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Every day</SelectItem>
+                <SelectItem value="twice">Twice a day</SelectItem>
+                <SelectItem value="weekly">Once a week</SelectItem>
+                <SelectItem value="manual">Manual only</SelectItem>
+              </SelectContent>
+            </Select>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="rounded-xl bg-secondary/30 p-4">
             <div className="flex items-center gap-3">
               <Clock className="w-4 h-4 text-primary" />
               <span className="text-sm font-semibold text-foreground flex-1">Wake-up time</span>

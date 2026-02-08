@@ -3,40 +3,16 @@ import { MoodChart } from "@/components/MoodChart";
 import { WeekPulseStrip } from "@/components/WeekPulseStrip";
 import { DayDetailSheet } from "@/components/DayDetailSheet";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingDown, MessageCircle, Brain, Heart, Download } from "lucide-react";
+import { TrendingDown, MessageCircle, Brain, Heart, Download, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useDashboardPulse } from "@/hooks/use-api";
+import { useDashboardPulse, useReportInsights } from "@/hooks/use-api";
 import { alertToStatus, analysisToDay, type Analysis } from "@/api/client";
 
-// Behavioral insights + topics kept as mock (would need NLP backend)
-const insights = [
-  {
-    icon: MessageCircle,
-    title: "Conversation patterns",
-    detail: "15% shorter conversations compared to last month. Average: 7 min vs 8.2 min.",
-    trend: "down" as const,
-  },
-  {
-    icon: Heart,
-    title: "Emotional tone",
-    detail: "Happy Mon-Wed. Quieter and more tired Thursday-Friday. Mentioned feeling lonely once.",
-    trend: "neutral" as const,
-  },
-  {
-    icon: Brain,
-    title: "Cognitive markers",
-    detail: "Speech pace is stable. Vocabulary richness normal. No concerns this week.",
-    trend: "stable" as const,
-  },
-];
-
-const topicsMentioned = [
-  { topic: "Knee pain", count: 3, isNew: false },
-  { topic: "Garden", count: 5, isNew: false },
-  { topic: "Cooking", count: 2, isNew: false },
-  { topic: "Sleeping poorly", count: 2, isNew: true },
-  { topic: "Soup recipe", count: 1, isNew: false },
-];
+const iconMap: Record<string, LucideIcon> = {
+  MessageCircle,
+  Heart,
+  Brain,
+};
 
 function buildWeekPulse(analyses: Analysis[]) {
   const byDay = new Map<string, Analysis>();
@@ -79,9 +55,12 @@ export default function Reports() {
   const reportRef = useRef<HTMLDivElement>(null);
 
   const { data: pulseData, isLoading } = useDashboardPulse();
+  const { data: reportData } = useReportInsights();
 
   const weekPulse = pulseData ? buildWeekPulse(pulseData) : [];
   const moodData = pulseData ? buildMoodData(pulseData) : [];
+  const insights = reportData?.insights ?? [];
+  const topicsMentioned = reportData?.topics ?? [];
   const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
 
   const handleDayClick = (day: string) => {
@@ -183,20 +162,23 @@ export default function Reports() {
         >
           <h3 className="text-base font-bold text-foreground mb-3">Behavioral insights</h3>
           <div className="space-y-3">
-            {insights.map((item, i) => (
-              <div key={i} className="rounded-2xl bg-card shadow-veille p-4 flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-foreground">{item.title}</h4>
-                    {item.trend === "down" && <TrendingDown className="w-3 h-3 text-status-warning" />}
+            {insights.map((item, i) => {
+              const Icon = iconMap[item.icon] ?? MessageCircle;
+              return (
+                <div key={i} className="rounded-2xl bg-card shadow-veille p-4 flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-foreground">{item.title}</h4>
+                      {item.trend === "down" && <TrendingDown className="w-3 h-3 text-status-warning" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
 

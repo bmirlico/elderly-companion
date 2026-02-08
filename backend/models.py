@@ -78,8 +78,10 @@ class SignupRequest(BaseModel):
     email: str
     password: str
     name: str
+    user_phone: str = ""
     loved_one_name: str
     loved_one_age: int
+    loved_one_phone: str = ""
     relationship: str = "family"
 
 

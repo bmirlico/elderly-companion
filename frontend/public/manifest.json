@@ -1,0 +1,17 @@
+{
+  "name": "Elderly Companion",
+  "short_name": "Elderly",
+  "description": "AI phone companion for elderly people",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

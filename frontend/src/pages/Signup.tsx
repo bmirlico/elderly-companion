@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Users, Calendar, Languages, Bell } from "lucide-react";
+import { User, Users, Calendar, Languages, Bell, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { authApi, storeAuth } from "@/api/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,10 +16,12 @@ export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userPhone, setUserPhone] = useState("");
 
   // Loved one fields
   const [lovedOneName, setLovedOneName] = useState("");
   const [lovedOneAge, setLovedOneAge] = useState("");
+  const [lovedOnePhone, setLovedOnePhone] = useState("");
   const [relationship, setRelationship] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,8 +36,10 @@ export default function Signup() {
         email,
         password,
         name,
+        user_phone: userPhone,
         loved_one_name: lovedOneName,
         loved_one_age: parseInt(lovedOneAge),
+        loved_one_phone: lovedOnePhone,
         relationship: relationship || "family",
       });
       storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id });
@@ -109,6 +113,21 @@ export default function Signup() {
                 className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </label>
+
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">Your phone number</span>
+              <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border/60 bg-background px-3 py-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                <input
+                  type="tel"
+                  placeholder="+33 6 12 34 56 78"
+                  value={userPhone}
+                  onChange={(e) => setUserPhone(e.target.value)}
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">For SMS alerts when something is detected</p>
+            </label>
           </section>
 
           <section className="rounded-3xl bg-card shadow-veille p-6 space-y-4">
@@ -152,6 +171,21 @@ export default function Signup() {
                 />
               </label>
             </div>
+
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">Their phone number</span>
+              <div className="mt-2 flex items-center gap-2 rounded-2xl border border-border/60 bg-background px-3 py-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                <input
+                  type="tel"
+                  placeholder="+33 6 98 76 54 32"
+                  value={lovedOnePhone}
+                  onChange={(e) => setLovedOnePhone(e.target.value)}
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">The number our companion will call</p>
+            </label>
 
             <label className="block">
               <span className="text-xs font-semibold text-muted-foreground">Primary language</span>

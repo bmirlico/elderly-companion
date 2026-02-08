@@ -1,4 +1,4 @@
-const API_BASE = "/api";
+const API_BASE = (import.meta.env.VITE_API_URL || "") + "/api";
 
 export function getStoredToken(): string | null {
   return localStorage.getItem("veille_token");
@@ -99,8 +99,10 @@ export const authApi = {
     email: string;
     password: string;
     name: string;
+    user_phone?: string;
     loved_one_name: string;
     loved_one_age: number;
+    loved_one_phone?: string;
     relationship: string;
   }) => fetchAPI<AuthResponse>("/auth/signup", { method: "POST", body: JSON.stringify(data) }),
 
@@ -110,6 +112,24 @@ export const authApi = {
 
 function rid() {
   return getStoredUser()?.resident_id ?? "";
+}
+
+export interface Insight {
+  icon: string;
+  title: string;
+  detail: string;
+  trend: "down" | "neutral" | "stable";
+}
+
+export interface Topic {
+  topic: string;
+  count: number;
+  isNew: boolean;
+}
+
+export interface ReportInsights {
+  insights: Insight[];
+  topics: Topic[];
 }
 
 export interface Nudge {
@@ -122,10 +142,16 @@ export const api = {
   getDashboardPulse: () => fetchAPI<Analysis[]>(`/dashboard/pulse?resident_id=${rid()}`),
   getCallStatus: () => fetchAPI<Call | null>(`/dashboard/call-status?resident_id=${rid()}`),
   getNudges: () => fetchAPI<Nudge[]>(`/dashboard/nudges?resident_id=${rid()}`),
+  getReportInsights: () => fetchAPI<ReportInsights>(`/dashboard/report-insights?resident_id=${rid()}`),
   triggerCall: () => fetchAPI<{ call_id: string; status: string }>(`/call/trigger?resident_id=${rid()}`, { method: "POST" }),
   simulateCall: (scenario: string) =>
     fetchAPI<{ status: string; scenario: string; call_id: string }>(
       `/call/simulate?scenario=${scenario}&resident_id=${rid()}`,
+      { method: "POST" },
+    ),
+  askAdvice: (question: string) =>
+    fetchAPI<{ question: string; answer: string }>(
+      `/advice?question=${encodeURIComponent(question)}`,
       { method: "POST" },
     ),
   triggerDigest: () => fetchAPI<Digest>(`/digest/trigger?resident_id=${rid()}`, { method: "POST" }),
