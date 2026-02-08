@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { BottomNav } from "@/components/BottomNav";
 import Welcome from "./pages/Welcome";
 import Login from "./pages/Login";
@@ -25,8 +25,19 @@ import MedicationSchedule from "./pages/MedicationSchedule";
 import NearbyServices from "./pages/NearbyServices";
 import WellnessTips from "./pages/WellnessTips";
 import NotFound from "./pages/NotFound";
+import { getStoredToken } from "@/api/client";
 
 const queryClient = new QueryClient();
+
+function ProtectedRoute({ children }: { children: React.ReactElement }) {
+  if (!getStoredToken()) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function GuestRoute({ children }: { children: React.ReactElement }) {
+  if (getStoredToken()) return <Navigate to="/" replace />;
+  return children;
+}
 
 const CAREGIVER_PATHS = ["/", "/reports", "/resources", "/profile", "/action"];
 
@@ -37,26 +48,29 @@ function AppLayout() {
   return (
     <>
       <Routes>
-        <Route path="/welcome" element={<Welcome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/action" element={<Action />} />
-        <Route path="/elder-setup" element={<ElderSetup />} />
-        <Route path="/elder-home" element={<ElderHome />} />
-        <Route path="/" element={<Index />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/resources" element={<Resources />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/personal-profile" element={<PersonalProfile />} />
-        <Route path="/caring-settings" element={<CaringSettings />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/help-support" element={<HelpSupport />} />
-        <Route path="/companion" element={<Companion />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/emergency-contacts" element={<EmergencyContacts />} />
-        <Route path="/medication-schedule" element={<MedicationSchedule />} />
-        <Route path="/nearby-services" element={<NearbyServices />} />
-        <Route path="/wellness-tips" element={<WellnessTips />} />
+        {/* Public routes — redirect to home if already logged in */}
+        <Route path="/welcome" element={<GuestRoute><Welcome /></GuestRoute>} />
+        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+        <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
+
+        {/* Protected routes — redirect to login if not authenticated */}
+        <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+        <Route path="/action" element={<ProtectedRoute><Action /></ProtectedRoute>} />
+        <Route path="/elder-setup" element={<ProtectedRoute><ElderSetup /></ProtectedRoute>} />
+        <Route path="/elder-home" element={<ProtectedRoute><ElderHome /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+        <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/personal-profile" element={<ProtectedRoute><PersonalProfile /></ProtectedRoute>} />
+        <Route path="/caring-settings" element={<ProtectedRoute><CaringSettings /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/help-support" element={<ProtectedRoute><HelpSupport /></ProtectedRoute>} />
+        <Route path="/companion" element={<ProtectedRoute><Companion /></ProtectedRoute>} />
+        <Route path="/privacy" element={<ProtectedRoute><Privacy /></ProtectedRoute>} />
+        <Route path="/emergency-contacts" element={<ProtectedRoute><EmergencyContacts /></ProtectedRoute>} />
+        <Route path="/medication-schedule" element={<ProtectedRoute><MedicationSchedule /></ProtectedRoute>} />
+        <Route path="/nearby-services" element={<ProtectedRoute><NearbyServices /></ProtectedRoute>} />
+        <Route path="/wellness-tips" element={<ProtectedRoute><WellnessTips /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
