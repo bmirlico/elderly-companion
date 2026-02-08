@@ -90,7 +90,7 @@ export default function Action() {
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-foreground">Ask Voixy</h3>
+              <h3 className="text-sm font-bold text-foreground">Ask Elderly</h3>
               <p className="text-xs text-muted-foreground">AI companion for personal questions</p>
             </div>
           </div>
