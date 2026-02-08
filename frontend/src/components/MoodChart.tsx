@@ -4,18 +4,17 @@ interface MoodChartProps {
   data?: { day: string; mood: number }[];
 }
 
-const fallbackData = [
-  { day: "Mon", mood: 78 },
-  { day: "Tue", mood: 82 },
-  { day: "Wed", mood: 85 },
-  { day: "Thu", mood: 60 },
-  { day: "Fri", mood: 65 },
-  { day: "Sat", mood: 70 },
-  { day: "Sun", mood: 75 },
-];
-
 export function MoodChart({ data }: MoodChartProps) {
-  const chartData = data && data.length > 0 ? data : fallbackData;
+  if (!data || data.length === 0) {
+    return (
+      <div className="rounded-2xl bg-card shadow-veille p-5">
+        <h3 className="text-base font-bold text-foreground mb-1">Mood</h3>
+        <p className="text-xs text-muted-foreground">No mood data yet. Trigger a call to start tracking.</p>
+      </div>
+    );
+  }
+
+  const chartData = data;
 
   return (
     <div className="rounded-2xl bg-card shadow-veille p-5">
