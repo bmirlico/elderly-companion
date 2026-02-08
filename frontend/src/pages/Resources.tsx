@@ -56,9 +56,9 @@ export default function Resources() {
           transition={{ delay: 0.5 }}
           className="mt-6 rounded-2xl bg-accent p-5"
         >
-          <h3 className="text-base font-bold text-accent-foreground mb-2">About Voixy</h3>
+          <h3 className="text-base font-bold text-accent-foreground mb-2">About Elderly</h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Voixy is your parent's daily companion that catches what they won't tell you. It's not surveillance — it's
+            Elderly is your parent's daily companion that catches what they won't tell you. It's not surveillance — it's
             awareness. The AI makes human connections better, not a substitute for them.
           </p>
         </motion.div>
