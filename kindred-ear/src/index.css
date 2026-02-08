@@ -1,0 +1,115 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 72% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 72% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 72% 10%;
+
+    --primary: 214 92% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 80% 95%;
+    --secondary-foreground: 214 92% 50%;
+
+    --muted: 216 20% 91%;
+    --muted-foreground: 214 14% 40%;
+
+    --accent: 214 80% 95%;
+    --accent-foreground: 220 85% 29%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 18% 74%;
+    --input: 213 18% 74%;
+    --ring: 214 92% 50%;
+
+    --radius: 1rem;
+
+    /* Status colors */
+    --status-good: 142 71% 45%;
+    --status-good-bg: 142 71% 95%;
+    --status-warning: 38 92% 50%;
+    --status-warning-bg: 38 92% 95%;
+    --status-alert: 0 84% 60%;
+    --status-alert-bg: 0 84% 95%;
+    --status-inactive: 0 0% 20%;
+    --status-inactive-bg: 0 0% 92%;
+
+    /* Veille-specific */
+    --veille-warm: 25 95% 53%;
+    --veille-warm-bg: 25 100% 96%;
+    --veille-gradient-start: 214 92% 50%;
+    --veille-gradient-end: 214 72% 65%;
+    --veille-card-shadow: 0 4px 20px 0 hsla(220, 85%, 25%, 0.12);
+    --veille-card-shadow-hover: 0 8px 30px 0 hsla(220, 85%, 25%, 0.18);
+
+    /* Bottom nav */
+    --nav-bg: 0 0% 100%;
+    --nav-inactive: 214 14% 40%;
+    --nav-active: 214 92% 50%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fff5f0, #f7f3ff, #eaf7ff);
+    @apply text-foreground font-figtree antialiased;
+  }
+}
+
+/* Pulse animation for status dot */
+@keyframes pulse-gentle {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2.5s ease-in-out infinite;
+}
+
+/* Talk button glow */
+@keyframes glow-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 20px 4px hsla(214, 92%, 50%, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 40px 8px hsla(214, 92%, 50%, 0.4);
+  }
+}
+
+.animate-glow-breathe {
+  animation: glow-breathe 3s ease-in-out infinite;
+}

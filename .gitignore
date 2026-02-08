@@ -1,0 +1,27 @@
+# Backend
+veille-backend/.env
+veille-backend/__pycache__/
+veille-backend/*.pyc
+veille-backend/.venv/
+veille-backend/venv/
+veille-backend/*.egg-info/
+veille-backend/dist/
+veille-backend/build/
+
+# Frontend
+kindred-ear/node_modules/
+kindred-ear/dist/
+kindred-ear/dist-ssr/
+kindred-ear/*.local
+
+# Spec (private)
+BACKEND-SPEC.md
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
+*.sw?
+
+# Logs
+*.log
