@@ -7,7 +7,7 @@ import { DayDetailSheet } from "@/components/DayDetailSheet";
 import { HeartHandshake } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDashboardToday, useDashboardPulse, useMe, useCallTrigger, useNudges } from "@/hooks/use-api";
-import { alertToStatus, formatLastTalked, analysisToDay, type Analysis } from "@/api/client";
+import { alertToStatus, formatLastTalked, analysisToDay, getStoredUser, type Analysis } from "@/api/client";
 
 const fallbackNudges = [
   { text: "No conversation data yet", suggestion: "Trigger a call to start getting insights" },
@@ -50,8 +50,9 @@ export default function FamilyHome() {
   const { data: nudgesData } = useNudges();
   const callTrigger = useCallTrigger();
 
-  const userName = me?.user.name.split(" ")[0] ?? "Sophie";
-  const residentName = me?.resident.name.split(" ")[0] ?? "Marie";
+  const storedName = getStoredUser()?.name?.split(" ")[0] ?? "";
+  const userName = me?.user.name.split(" ")[0] ?? storedName;
+  const residentName = me?.resident.name.split(" ")[0] ?? "";
 
   const weekPulse = pulseData ? buildWeekPulse(pulseData) : [];
   const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
