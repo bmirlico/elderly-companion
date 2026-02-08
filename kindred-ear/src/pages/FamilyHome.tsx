@@ -6,14 +6,11 @@ import { WeekPulseStrip } from "@/components/WeekPulseStrip";
 import { DayDetailSheet } from "@/components/DayDetailSheet";
 import { Search, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDashboardToday, useDashboardPulse, useMe } from "@/hooks/use-api";
+import { useDashboardToday, useDashboardPulse, useMe, useCallTrigger, useNudges } from "@/hooks/use-api";
 import { alertToStatus, formatLastTalked, analysisToDay, type Analysis } from "@/api/client";
 
-// Fallback nudges (kept as mock — would need NLP backend to generate)
-const nudges = [
-  { text: "Mom mentioned her knee 3 times this week", suggestion: "Maybe ask her about it on your next call?" },
-  { text: "She sounded really happy talking about her garden", suggestion: "Might be nice to mention it" },
-  { text: "She hasn't mentioned eating dinner in 4 days", suggestion: "Could be nothing, but worth checking" },
+const fallbackNudges = [
+  { text: "No conversation data yet", suggestion: "Trigger a call to start getting insights" },
 ];
 
 function buildWeekPulse(analyses: Analysis[]) {
@@ -24,10 +21,11 @@ function buildWeekPulse(analyses: Analysis[]) {
     if (!byDay.has(day)) byDay.set(day, a); // keep most recent per day
   }
 
-  // Generate current week dates
+  // Generate current week dates (handle Sunday: getDay()=0 should go back 6 days)
   const now = new Date();
   const monday = new Date(now);
-  monday.setDate(now.getDate() - now.getDay() + 1);
+  const dow = now.getDay();
+  monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
 
   return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
     const d = new Date(monday);
@@ -49,6 +47,8 @@ export default function FamilyHome() {
   const { data: me } = useMe();
   const { data: todayAnalysis, isLoading: todayLoading } = useDashboardToday();
   const { data: pulseData, isLoading: pulseLoading } = useDashboardPulse();
+  const { data: nudgesData } = useNudges();
+  const callTrigger = useCallTrigger();
 
   const userName = me?.user.name.split(" ")[0] ?? "Sophie";
   const residentName = me?.resident.name.split(" ")[0] ?? "Marie";
@@ -94,6 +94,8 @@ export default function FamilyHome() {
             status={status}
             lastTalked={lastTalked}
             summary={summary}
+            onCallClick={() => callTrigger.mutate()}
+            isCallPending={callTrigger.isPending}
           />
         )}
 
@@ -139,7 +141,7 @@ export default function FamilyHome() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-6">
           <h3 className="text-base font-bold text-foreground mb-3">Smart nudges</h3>
           <div className="space-y-3">
-            {nudges.map((nudge, i) => (
+            {(nudgesData ?? fallbackNudges).map((nudge, i) => (
               <NudgeCard key={i} text={nudge.text} suggestion={nudge.suggestion} index={i} />
             ))}
           </div>

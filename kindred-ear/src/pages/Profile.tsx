@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { User, Bell, Heart, HelpCircle, LogOut, ChevronRight, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useMe } from "@/hooks/use-api";
+import { clearAuth } from "@/api/client";
 
 const menuItems = [
   { icon: Heart, label: "Who I am caring about", description: "Preferences & adjustments", path: "/caring-settings" },
@@ -11,6 +13,15 @@ const menuItems = [
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { data: me } = useMe();
+
+  const userName = me?.user.name ?? "...";
+  const residentName = me?.resident.name.split(" ")[0] ?? "...";
+
+  const handleSignOut = () => {
+    clearAuth();
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -25,8 +36,8 @@ export default function Profile() {
             <User className="w-7 h-7 text-primary" />
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-foreground">Sophie Dupont</h1>
-            <p className="text-sm text-muted-foreground">Caring for Marie</p>
+            <h1 className="text-xl font-bold text-foreground">{userName}</h1>
+            <p className="text-sm text-muted-foreground">Caring for {residentName}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </motion.button>
@@ -57,7 +68,7 @@ export default function Profile() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          onClick={() => navigate("/login")}
+          onClick={handleSignOut}
           className="w-full mt-8 rounded-xl p-4 flex items-center gap-3 text-left hover:bg-destructive/5 transition-colors"
         >
           <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
