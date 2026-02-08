@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from datetime import datetime, timedelta
 
 from config import settings
 from db import supabase
@@ -220,17 +221,26 @@ async def twilio_stream(websocket: WebSocket):
 
 @app.get("/api/dashboard/pulse")
 async def get_pulse(resident_id: str = ""):
-    """Get last 7 days of analyses for the dashboard."""
+    """Get last 7 days of analyses — one per day (most recent each day)."""
     rid = resident_id or ""
+    seven_days_ago = (datetime.now() - timedelta(days=7)).isoformat()
     result = (
         supabase.table("analyses")
         .select("*")
         .eq("resident_id", rid)
+        .gte("created_at", seven_days_ago)
         .order("created_at", desc=True)
-        .limit(7)
         .execute()
     )
-    return result.data
+    # Keep only the latest analysis per day
+    seen_days: set[str] = set()
+    daily: list[dict] = []
+    for row in result.data:
+        day = row["created_at"][:10]
+        if day not in seen_days:
+            seen_days.add(day)
+            daily.append(row)
+    return daily
 
 
 @app.get("/api/dashboard/today")
