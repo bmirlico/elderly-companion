@@ -280,7 +280,7 @@ async def ask_advice(question: str) -> str | None:
         return None
 
     try:
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(
                 f"{DUST_API_BASE}/w/{settings.dust_workspace_id}/assistant/conversations",
                 headers={
@@ -289,7 +289,7 @@ async def ask_advice(question: str) -> str | None:
                 },
                 json={
                     "message": {
-                        "content": question,
+                        "content": f"Answer in 2-3 short sentences max. Be practical and direct.\n\nQuestion: {question}",
                         "mentions": [{"configurationId": settings.dust_qa_agent_id}],
                         "context": {
                             "username": "veille-backend",
