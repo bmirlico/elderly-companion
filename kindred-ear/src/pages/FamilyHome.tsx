@@ -6,7 +6,7 @@ import { WeekPulseStrip } from "@/components/WeekPulseStrip";
 import { DayDetailSheet } from "@/components/DayDetailSheet";
 import { Search, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDashboardToday, useDashboardPulse } from "@/hooks/use-api";
+import { useDashboardToday, useDashboardPulse, useMe } from "@/hooks/use-api";
 import { alertToStatus, formatLastTalked, analysisToDay, type Analysis } from "@/api/client";
 
 // Fallback nudges (kept as mock — would need NLP backend to generate)
@@ -46,8 +46,12 @@ export default function FamilyHome() {
   const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
+  const { data: me } = useMe();
   const { data: todayAnalysis, isLoading: todayLoading } = useDashboardToday();
   const { data: pulseData, isLoading: pulseLoading } = useDashboardPulse();
+
+  const userName = me?.user.name.split(" ")[0] ?? "Sophie";
+  const residentName = me?.resident.name.split(" ")[0] ?? "Marie";
 
   const weekPulse = pulseData ? buildWeekPulse(pulseData) : [];
   const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
@@ -67,8 +71,8 @@ export default function FamilyHome() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-extrabold text-foreground">Hello, Sophie</h1>
-            <p className="text-sm text-muted-foreground">Here's how Mom is doing</p>
+            <h1 className="text-xl font-extrabold text-foreground">Hello, {userName}</h1>
+            <p className="text-sm text-muted-foreground">Here's how {residentName} is doing</p>
           </div>
           <div className="flex items-center gap-2">
             <button className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
@@ -86,7 +90,7 @@ export default function FamilyHome() {
           <div className="rounded-2xl bg-card shadow-veille p-5 animate-pulse h-32" />
         ) : (
           <PulseCard
-            parentName="Marie"
+            parentName={residentName}
             status={status}
             lastTalked={lastTalked}
             summary={summary}
@@ -119,7 +123,7 @@ export default function FamilyHome() {
                           title: selectedPulse.analysis.alert_level === "red" ? "Urgent attention needed" : "Attention recommended",
                           description: selectedPulse.analysis.family_message,
                           actions: [
-                            { label: "Call Marie", primary: true },
+                            { label: `Call ${residentName}`, primary: true },
                             { label: "Call Dr. Martin" },
                           ],
                         }

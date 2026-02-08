@@ -148,12 +148,13 @@ async def twilio_stream(websocket: WebSocket):
 
 
 @app.get("/api/dashboard/pulse")
-async def get_pulse():
+async def get_pulse(resident_id: str = ""):
     """Get last 7 days of analyses for the dashboard."""
+    rid = resident_id or settings.resident_id
     result = (
         supabase.table("analyses")
         .select("*")
-        .eq("resident_id", settings.resident_id)
+        .eq("resident_id", rid)
         .order("created_at", desc=True)
         .limit(7)
         .execute()
@@ -162,12 +163,13 @@ async def get_pulse():
 
 
 @app.get("/api/dashboard/today")
-async def get_today():
+async def get_today(resident_id: str = ""):
     """Get today's analysis (latest)."""
+    rid = resident_id or settings.resident_id
     result = (
         supabase.table("analyses")
         .select("*")
-        .eq("resident_id", settings.resident_id)
+        .eq("resident_id", rid)
         .order("created_at", desc=True)
         .limit(1)
         .execute()
@@ -176,12 +178,13 @@ async def get_today():
 
 
 @app.get("/api/dashboard/call-status")
-async def get_call_status():
+async def get_call_status(resident_id: str = ""):
     """Get the most recent call status."""
+    rid = resident_id or settings.resident_id
     result = (
         supabase.table("calls")
         .select("*")
-        .eq("resident_id", settings.resident_id)
+        .eq("resident_id", rid)
         .order("created_at", desc=True)
         .limit(1)
         .execute()
@@ -190,7 +193,7 @@ async def get_call_status():
 
 
 @app.post("/api/call/simulate")
-async def simulate_call(scenario: str = "green"):
+async def simulate_call(scenario: str = "green", resident_id: str = ""):
     """Skip live call, directly trigger analysis with a pre-written transcript."""
     scenarios = {
         "green": [
@@ -216,9 +219,10 @@ async def simulate_call(scenario: str = "green"):
     transcript = scenarios[scenario]
 
     # Create a fake call record
+    rid = resident_id or settings.resident_id
     from datetime import datetime, timezone
     call_result = supabase.table("calls").insert({
-        "resident_id": settings.resident_id,
+        "resident_id": rid,
         "status": "completed",
         "started_at": datetime.now(timezone.utc).isoformat(),
         "ended_at": datetime.now(timezone.utc).isoformat(),
@@ -231,7 +235,7 @@ async def simulate_call(scenario: str = "green"):
 
     await trigger_post_call_analysis(
         call_id=call_id,
-        resident_id=settings.resident_id,
+        resident_id=rid,
         transcript=transcript,
         turn_count=len([t for t in transcript if t["role"] == "user"]),
         duration_seconds=120,
@@ -241,9 +245,10 @@ async def simulate_call(scenario: str = "green"):
 
 
 @app.post("/api/digest/trigger")
-async def trigger_digest():
+async def trigger_digest(resident_id: str = ""):
     """Trigger a weekly digest: analyzes last 7 days and SMS the family."""
-    digest = await trigger_weekly_digest(settings.resident_id)
+    rid = resident_id or settings.resident_id
+    digest = await trigger_weekly_digest(rid)
     if not digest:
         raise HTTPException(status_code=500, detail="Failed to generate weekly digest")
     return digest

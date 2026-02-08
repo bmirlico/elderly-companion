@@ -84,7 +84,17 @@ export interface Digest {
 
 // --- API functions ---
 
+export interface MeResponse {
+  user: { id: string; name: string; email: string };
+  resident: { id: string; name: string; age: number | null };
+}
+
 export const authApi = {
+  me: () => {
+    const token = getStoredToken();
+    if (!token) return Promise.reject(new Error("No token"));
+    return fetchAPI<MeResponse>(`/auth/me?token=${token}`);
+  },
   signup: (data: {
     email: string;
     password: string;
@@ -98,17 +108,21 @@ export const authApi = {
     fetchAPI<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
 };
 
+function rid() {
+  return getStoredUser()?.resident_id ?? "";
+}
+
 export const api = {
-  getDashboardToday: () => fetchAPI<Analysis | null>("/dashboard/today"),
-  getDashboardPulse: () => fetchAPI<Analysis[]>("/dashboard/pulse"),
-  getCallStatus: () => fetchAPI<Call | null>("/dashboard/call-status"),
-  triggerCall: () => fetchAPI<{ call_id: string; status: string }>("/call/trigger", { method: "POST" }),
+  getDashboardToday: () => fetchAPI<Analysis | null>(`/dashboard/today?resident_id=${rid()}`),
+  getDashboardPulse: () => fetchAPI<Analysis[]>(`/dashboard/pulse?resident_id=${rid()}`),
+  getCallStatus: () => fetchAPI<Call | null>(`/dashboard/call-status?resident_id=${rid()}`),
+  triggerCall: () => fetchAPI<{ call_id: string; status: string }>(`/call/trigger?resident_id=${rid()}`, { method: "POST" }),
   simulateCall: (scenario: string) =>
     fetchAPI<{ status: string; scenario: string; call_id: string }>(
-      `/call/simulate?scenario=${scenario}`,
+      `/call/simulate?scenario=${scenario}&resident_id=${rid()}`,
       { method: "POST" },
     ),
-  triggerDigest: () => fetchAPI<Digest>("/digest/trigger", { method: "POST" }),
+  triggerDigest: () => fetchAPI<Digest>(`/digest/trigger?resident_id=${rid()}`, { method: "POST" }),
 };
 
 // --- Transform helpers ---

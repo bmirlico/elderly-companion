@@ -1,5 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/client";
+import { api, authApi, getStoredToken } from "@/api/client";
+
+export function useMe() {
+  return useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: authApi.me,
+    enabled: !!getStoredToken(),
+    staleTime: 5 * 60_000,
+  });
+}
 
 export function useDashboardToday() {
   return useQuery({

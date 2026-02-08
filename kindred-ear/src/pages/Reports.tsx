@@ -151,7 +151,7 @@ export default function Reports() {
                           title: selectedPulse.analysis.alert_level === "red" ? "Urgent attention needed" : "Attention recommended",
                           description: selectedPulse.analysis.family_message,
                           actions: [
-                            { label: "Call Marie", primary: true },
+                            { label: "Call", primary: true },
                             { label: "Call Dr. Martin" },
                           ],
                         }
