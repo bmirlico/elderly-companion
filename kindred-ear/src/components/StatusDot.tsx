@@ -6,7 +6,7 @@ const statusConfig: Record<StatusLevel, { label: string; emoji: string; bgClass:
   good: { label: "Sounded good", emoji: "🟢", bgClass: "bg-status-good-bg", dotClass: "bg-status-good shadow-[0_0_8px_3px_hsl(var(--status-good)/0.45)]" },
   warning: { label: "Something felt off", emoji: "🟡", bgClass: "bg-status-warning-bg", dotClass: "bg-status-warning shadow-[0_0_8px_3px_hsl(var(--status-warning)/0.45)]" },
   alert: { label: "Something concerning", emoji: "🔴", bgClass: "bg-status-alert-bg", dotClass: "bg-status-alert shadow-[0_0_8px_3px_hsl(var(--status-alert)/0.45)]" },
-  inactive: { label: "Hasn't opened app", emoji: "⚫", bgClass: "bg-status-inactive-bg", dotClass: "bg-status-inactive shadow-[0_0_8px_3px_hsl(var(--status-inactive)/0.3)]" },
+  inactive: { label: "No data", emoji: "⚪", bgClass: "bg-status-inactive-bg", dotClass: "bg-status-inactive shadow-[0_0_8px_3px_hsl(var(--status-inactive)/0.3)]" },
 };
 
 interface StatusDotProps {

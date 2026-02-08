@@ -47,7 +47,8 @@ function buildWeekPulse(analyses: Analysis[]) {
 
   const now = new Date();
   const monday = new Date(now);
-  monday.setDate(now.getDate() - now.getDay() + 1);
+  const dow = now.getDay();
+  monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
 
   return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
     const d = new Date(monday);

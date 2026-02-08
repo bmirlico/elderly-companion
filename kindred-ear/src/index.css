@@ -43,8 +43,8 @@
     --status-warning-bg: 38 92% 95%;
     --status-alert: 0 84% 60%;
     --status-alert-bg: 0 84% 95%;
-    --status-inactive: 0 0% 20%;
-    --status-inactive-bg: 0 0% 92%;
+    --status-inactive: 0 0% 78%;
+    --status-inactive-bg: 0 0% 95%;
 
     /* Veille-specific */
     --veille-warm: 25 95% 53%;

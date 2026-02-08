@@ -1,5 +1,5 @@
 import { StatusDot } from "./StatusDot";
-import { Phone } from "lucide-react";
+import { Phone, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 type StatusLevel = "good" | "warning" | "alert" | "inactive";
@@ -9,16 +9,18 @@ interface PulseCardProps {
   status: StatusLevel;
   lastTalked: string;
   summary: string;
+  onCallClick?: () => void;
+  isCallPending?: boolean;
 }
 
 const statusMessages: Record<StatusLevel, string> = {
   good: "Talked today, sounded good",
   warning: "Talked today, something felt a bit off",
   alert: "Something concerning detected",
-  inactive: "Hasn't opened the app in 2 days",
+  inactive: "No conversation yet",
 };
 
-export function PulseCard({ parentName, status, lastTalked, summary }: PulseCardProps) {
+export function PulseCard({ parentName, status, lastTalked, summary, onCallClick, isCallPending }: PulseCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -34,8 +36,16 @@ export function PulseCard({ parentName, status, lastTalked, summary }: PulseCard
             <p className="text-xs text-muted-foreground">{lastTalked}</p>
           </div>
         </div>
-        <button className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-accent transition-colors">
-          <Phone className="w-4 h-4 text-primary" />
+        <button
+          onClick={onCallClick}
+          disabled={isCallPending}
+          className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center hover:bg-accent transition-colors disabled:opacity-50"
+        >
+          {isCallPending ? (
+            <Loader2 className="w-4 h-4 text-primary animate-spin" />
+          ) : (
+            <Phone className="w-4 h-4 text-primary" />
+          )}
         </button>
       </div>
 
