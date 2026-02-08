@@ -6,76 +6,60 @@ import { WeekPulseStrip } from "@/components/WeekPulseStrip";
 import { DayDetailSheet } from "@/components/DayDetailSheet";
 import { Search, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDashboardToday, useDashboardPulse } from "@/hooks/use-api";
+import { alertToStatus, formatLastTalked, analysisToDay, type Analysis } from "@/api/client";
 
-// Generate dates for this week
-const getWeekDates = () => {
+// Fallback nudges (kept as mock — would need NLP backend to generate)
+const nudges = [
+  { text: "Mom mentioned her knee 3 times this week", suggestion: "Maybe ask her about it on your next call?" },
+  { text: "She sounded really happy talking about her garden", suggestion: "Might be nice to mention it" },
+  { text: "She hasn't mentioned eating dinner in 4 days", suggestion: "Could be nothing, but worth checking" },
+];
+
+function buildWeekPulse(analyses: Analysis[]) {
+  // Build a map of day-of-week → analysis
+  const byDay = new Map<string, Analysis>();
+  for (const a of analyses) {
+    const day = analysisToDay(a);
+    if (!byDay.has(day)) byDay.set(day, a); // keep most recent per day
+  }
+
+  // Generate current week dates
   const now = new Date();
   const monday = new Date(now);
   monday.setDate(now.getDate() - now.getDay() + 1);
+
   return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    return { day, date: `${d.getDate()}/${d.getMonth() + 1}` };
+    const analysis = byDay.get(day);
+    return {
+      day,
+      date: `${d.getDate()}/${d.getMonth() + 1}`,
+      status: analysis ? alertToStatus(analysis.alert_level) : ("inactive" as const),
+      analysis,
+    };
   });
-};
-
-const weekDates = getWeekDates();
-
-const weekPulse = [
-  { ...weekDates[0], status: "good" as const },
-  { ...weekDates[1], status: "good" as const },
-  { ...weekDates[2], status: "good" as const },
-  { ...weekDates[3], status: "warning" as const },
-  { ...weekDates[4], status: "alert" as const },
-  { ...weekDates[5], status: "good" as const },
-  { ...weekDates[6], status: "good" as const },
-];
-
-const dayDetails: Record<string, { summary: string; alert?: { title: string; description: string; actions: { label: string; primary?: boolean }[] } }> = {
-  Mon: { summary: "Marie sounded cheerful. She talked about making jam and mentioned her friend Françoise visited." },
-  Tue: { summary: "Good conversation. She mentioned a walk in the park and was in good spirits." },
-  Wed: { summary: "Marie was talkative, discussed her garden and a TV show she enjoyed." },
-  Thu: {
-    summary: "Marie mentioned feeling a bit tired. Her speech pace was slower than usual.",
-    alert: {
-      title: "Attention recommandée",
-      description: "Marie a mentionné être tombée hier. Elle dit aller bien mais elle avait du mal à se relever. Son débit de parole était plus lent que d'habitude aujourd'hui.",
-      actions: [
-        { label: "Appeler Marie", primary: true },
-        { label: "Appeler Dr. Martin" },
-      ],
-    },
-  },
-  Fri: {
-    summary: "Concerning patterns detected. Marie didn't mention eating and sounded confused about the day.",
-    alert: {
-      title: "Urgent attention needed",
-      description: "Marie seemed disoriented during the call. She confused today with yesterday and couldn't recall her last meal. This is unusual for her.",
-      actions: [
-        { label: "Appeler Marie", primary: true },
-        { label: "Appeler Dr. Martin" },
-      ],
-    },
-  },
-  Sat: { summary: "Marie was in great spirits. She mentioned Sophie's visit and was very happy." },
-  Sun: { summary: "Calm Sunday. Marie mentioned reading and listening to music. All seemed well." },
-};
-
-const nudges = [
-  { text: "Mom mentioned her knee 3 times this week", suggestion: "Maybe ask her about it on your next call?" },
-  { text: "She sounded really happy talking about Françoise", suggestion: "Might be nice to mention her neighbor" },
-  { text: "She hasn't mentioned eating dinner in 4 days", suggestion: "Could be nothing, but worth checking" },
-];
+}
 
 export default function FamilyHome() {
   const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
+  const { data: todayAnalysis, isLoading: todayLoading } = useDashboardToday();
+  const { data: pulseData, isLoading: pulseLoading } = useDashboardPulse();
+
+  const weekPulse = pulseData ? buildWeekPulse(pulseData) : [];
+  const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
+
   const handleDayClick = (day: string) => {
     setSelectedDay(selectedDay === day ? null : day);
   };
 
-  const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
+  // Derive PulseCard props from today's analysis
+  const status = todayAnalysis ? alertToStatus(todayAnalysis.alert_level) : "inactive";
+  const lastTalked = todayAnalysis ? formatLastTalked(todayAnalysis.created_at) : "No conversation yet";
+  const summary = todayAnalysis?.summary ?? "No data available yet.";
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -92,36 +76,54 @@ export default function FamilyHome() {
             </button>
             <button className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center relative">
               <Bell className="w-4 h-4 text-muted-foreground" />
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-status-alert" />
+              {status === "alert" && <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-status-alert" />}
             </button>
           </div>
         </motion.div>
 
         {/* Pulse Card */}
-        <PulseCard
-          parentName="Marie"
-          status="good"
-          lastTalked="Last conversation: Today, 9:14 AM"
-          summary="She mentioned making soup and seemed in good spirits. Talked about the garden for 5 minutes."
-        />
+        {todayLoading ? (
+          <div className="rounded-2xl bg-card shadow-veille p-5 animate-pulse h-32" />
+        ) : (
+          <PulseCard
+            parentName="Marie"
+            status={status}
+            lastTalked={lastTalked}
+            summary={summary}
+          />
+        )}
 
         {/* This Week Strip */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-6">
           <h3 className="text-base font-bold text-foreground mb-3">This week's pulse</h3>
           <div className="rounded-2xl bg-card shadow-veille p-4">
-            <WeekPulseStrip days={weekPulse} selectedDay={selectedDay} onDayClick={handleDayClick} />
+            {pulseLoading ? (
+              <div className="h-12 animate-pulse" />
+            ) : (
+              <WeekPulseStrip days={weekPulse} selectedDay={selectedDay} onDayClick={handleDayClick} />
+            )}
           </div>
 
           {/* Day detail sheet */}
           <AnimatePresence>
-            {selectedDay && selectedPulse && dayDetails[selectedDay] && (
+            {selectedDay && selectedPulse?.analysis && (
               <DayDetailSheet
                 detail={{
                   day: selectedDay,
                   date: selectedPulse.date || "",
-                  status: selectedPulse.status,
-                  summary: dayDetails[selectedDay].summary,
-                  alert: dayDetails[selectedDay].alert,
+                  status: alertToStatus(selectedPulse.analysis.alert_level),
+                  summary: selectedPulse.analysis.summary ?? "No summary available.",
+                  alert:
+                    selectedPulse.analysis.alert_level !== "green" && selectedPulse.analysis.family_message
+                      ? {
+                          title: selectedPulse.analysis.alert_level === "red" ? "Urgent attention needed" : "Attention recommended",
+                          description: selectedPulse.analysis.family_message,
+                          actions: [
+                            { label: "Call Marie", primary: true },
+                            { label: "Call Dr. Martin" },
+                          ],
+                        }
+                      : undefined,
                 }}
                 onClose={() => setSelectedDay(null)}
               />

@@ -5,61 +5,10 @@ import { DayDetailSheet } from "@/components/DayDetailSheet";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingDown, MessageCircle, Brain, Heart, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDashboardPulse } from "@/hooks/use-api";
+import { alertToStatus, analysisToDay, type Analysis } from "@/api/client";
 
-// Generate dates for this week (same logic as FamilyHome)
-const getWeekDates = () => {
-  const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - now.getDay() + 1);
-  return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return { day, date: `${d.getDate()}/${d.getMonth() + 1}` };
-  });
-};
-
-const weekDates = getWeekDates();
-
-const weekPulse = [
-  { ...weekDates[0], status: "good" as const },
-  { ...weekDates[1], status: "good" as const },
-  { ...weekDates[2], status: "good" as const },
-  { ...weekDates[3], status: "warning" as const },
-  { ...weekDates[4], status: "alert" as const },
-  { ...weekDates[5], status: "good" as const },
-  { ...weekDates[6], status: "good" as const },
-];
-
-const dayDetails: Record<string, { summary: string; alert?: { title: string; description: string; actions: { label: string; primary?: boolean }[] } }> = {
-  Mon: { summary: "Marie sounded cheerful. She talked about making jam and mentioned her friend Françoise visited." },
-  Tue: { summary: "Good conversation. She mentioned a walk in the park and was in good spirits." },
-  Wed: { summary: "Marie was talkative, discussed her garden and a TV show she enjoyed." },
-  Thu: {
-    summary: "Marie mentioned feeling a bit tired. Her speech pace was slower than usual.",
-    alert: {
-      title: "Attention recommandée",
-      description: "Marie a mentionné être tombée hier. Elle dit aller bien mais elle avait du mal à se relever. Son débit de parole était plus lent que d'habitude aujourd'hui.",
-      actions: [
-        { label: "Appeler Marie", primary: true },
-        { label: "Appeler Dr. Martin" },
-      ],
-    },
-  },
-  Fri: {
-    summary: "Concerning patterns detected. Marie didn't mention eating and sounded confused about the day.",
-    alert: {
-      title: "Urgent attention needed",
-      description: "Marie seemed disoriented during the call. She confused today with yesterday and couldn't recall her last meal. This is unusual for her.",
-      actions: [
-        { label: "Appeler Marie", primary: true },
-        { label: "Appeler Dr. Martin" },
-      ],
-    },
-  },
-  Sat: { summary: "Marie was in great spirits. She mentioned Sophie's visit and was very happy." },
-  Sun: { summary: "Calm Sunday. Marie mentioned reading and listening to music. All seemed well." },
-};
-
+// Behavioral insights + topics kept as mock (would need NLP backend)
 const insights = [
   {
     icon: MessageCircle,
@@ -70,7 +19,7 @@ const insights = [
   {
     icon: Heart,
     title: "Emotional tone",
-    detail: "Happy Mon–Wed. Quieter and more tired Thursday–Friday. Mentioned feeling lonely once.",
+    detail: "Happy Mon-Wed. Quieter and more tired Thursday-Friday. Mentioned feeling lonely once.",
     trend: "neutral" as const,
   },
   {
@@ -84,20 +33,59 @@ const insights = [
 const topicsMentioned = [
   { topic: "Knee pain", count: 3, isNew: false },
   { topic: "Garden", count: 5, isNew: false },
-  { topic: "Françoise (neighbor)", count: 2, isNew: false },
+  { topic: "Cooking", count: 2, isNew: false },
   { topic: "Sleeping poorly", count: 2, isNew: true },
   { topic: "Soup recipe", count: 1, isNew: false },
 ];
+
+function buildWeekPulse(analyses: Analysis[]) {
+  const byDay = new Map<string, Analysis>();
+  for (const a of analyses) {
+    const day = analysisToDay(a);
+    if (!byDay.has(day)) byDay.set(day, a);
+  }
+
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - now.getDay() + 1);
+
+  return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const analysis = byDay.get(day);
+    return {
+      day,
+      date: `${d.getDate()}/${d.getMonth() + 1}`,
+      status: analysis ? alertToStatus(analysis.alert_level) : ("inactive" as const),
+      analysis,
+    };
+  });
+}
+
+function buildMoodData(analyses: Analysis[]) {
+  // Chronological order, map to day + mood 0-100
+  return [...analyses]
+    .reverse()
+    .filter((a) => a.mood_score != null)
+    .map((a) => ({
+      day: analysisToDay(a),
+      mood: Math.round((a.mood_score ?? 0) * 100),
+    }));
+}
 
 export default function Reports() {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
+  const { data: pulseData, isLoading } = useDashboardPulse();
+
+  const weekPulse = pulseData ? buildWeekPulse(pulseData) : [];
+  const moodData = pulseData ? buildMoodData(pulseData) : [];
+  const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
+
   const handleDayClick = (day: string) => {
     setSelectedDay(selectedDay === day ? null : day);
   };
-
-  const selectedPulse = selectedDay ? weekPulse.find((d) => d.day === selectedDay) : null;
 
   const handleDownload = () => {
     const printContent = reportRef.current;
@@ -141,22 +129,33 @@ export default function Reports() {
         >
           <h3 className="text-base font-bold text-foreground mb-3">This week's pulse</h3>
           <div className="rounded-2xl bg-card shadow-veille p-4">
-            <WeekPulseStrip days={weekPulse} selectedDay={selectedDay} onDayClick={handleDayClick} />
+            {isLoading ? (
+              <div className="h-12 animate-pulse" />
+            ) : (
+              <WeekPulseStrip days={weekPulse} selectedDay={selectedDay} onDayClick={handleDayClick} />
+            )}
           </div>
-          <p className="text-xs text-muted-foreground mt-3 px-1">
-            Mom seemed in good spirits Mon–Wed. Thursday she sounded more tired than usual and mentioned not sleeping well.
-          </p>
 
           {/* Day detail sheet */}
           <AnimatePresence>
-            {selectedDay && selectedPulse && dayDetails[selectedDay] && (
+            {selectedDay && selectedPulse?.analysis && (
               <DayDetailSheet
                 detail={{
                   day: selectedDay,
                   date: selectedPulse.date || "",
-                  status: selectedPulse.status,
-                  summary: dayDetails[selectedDay].summary,
-                  alert: dayDetails[selectedDay].alert,
+                  status: alertToStatus(selectedPulse.analysis.alert_level),
+                  summary: selectedPulse.analysis.summary ?? "No summary available.",
+                  alert:
+                    selectedPulse.analysis.alert_level !== "green" && selectedPulse.analysis.family_message
+                      ? {
+                          title: selectedPulse.analysis.alert_level === "red" ? "Urgent attention needed" : "Attention recommended",
+                          description: selectedPulse.analysis.family_message,
+                          actions: [
+                            { label: "Call Marie", primary: true },
+                            { label: "Call Dr. Martin" },
+                          ],
+                        }
+                      : undefined,
                 }}
                 onClose={() => setSelectedDay(null)}
               />
@@ -171,7 +170,7 @@ export default function Reports() {
           transition={{ delay: 0.2 }}
           className="mb-5"
         >
-          <MoodChart />
+          <MoodChart data={moodData} />
         </motion.div>
 
         {/* Behavioral Insights */}
