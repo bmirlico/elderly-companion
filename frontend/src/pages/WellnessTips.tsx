@@ -27,7 +27,7 @@ export default function WellnessTips() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="max-w-md mx-auto px-5 pt-14">
-        <button onClick={() => navigate("/resources")} className="mb-6 flex items-center gap-2 text-muted-foreground">
+        <button type="button" onClick={() => navigate("/resources")} className="mb-6 flex items-center gap-2 text-muted-foreground">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-medium">Back</span>
         </button>
