@@ -381,8 +381,8 @@ elderly-companion/
 | Name | GitHub |
 |---|---|
 | 🧑‍💻 Anthony | [@aakinboh-gramsneural](https://github.com/aakinboh-gramsneural) |
-| 🧑‍💻 Vivian | [@fatway0](https://github.com/fatway0) |
-| 🧑‍💻 Luly | [@lumaruyam](https://github.com/lumaruyam) |
+| 🧑‍💻 Wei-Ling | [@whung99](https://github.com/whung99) |
+| 🧑‍💻 Luli | [@lumaruyam](https://github.com/lumaruyam) |
 | 🧑‍💻 Bastien | [@bmirlico](https://github.com/bmirlico) |
 
 Built with ❤️ at {Tech: Europe} Paris AI Hackathon — because every elderly person deserves someone to talk to, and every family deserves peace of mind.
