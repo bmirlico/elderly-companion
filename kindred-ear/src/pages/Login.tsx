@@ -1,8 +1,31 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { HeartHandshake, Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { authApi, storeAuth } from "@/api/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await authApi.login({ email, password });
+      storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id });
+      navigate("/");
+    } catch {
+      toast({ title: "Login failed", description: "Invalid email or password", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-[#F7F3FF] to-[#EAF7FF] flex items-center justify-center px-5">
       <div className="w-full max-w-md">
@@ -25,6 +48,7 @@ export default function Login() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="rounded-3xl bg-card shadow-veille p-6 space-y-4"
+          onSubmit={handleSubmit}
         >
           <label className="block">
             <span className="text-xs font-semibold text-muted-foreground">Email</span>
@@ -33,6 +57,9 @@ export default function Login() {
               <input
                 type="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
@@ -45,13 +72,20 @@ export default function Login() {
               <input
                 type="password"
                 placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
           </label>
 
-          <button className="w-full rounded-2xl bg-primary text-primary-foreground py-3 text-sm font-semibold">
-            Sign in
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-primary text-primary-foreground py-3 text-sm font-semibold disabled:opacity-50"
+          >
+            {loading ? "Signing in..." : "Sign in"}
           </button>
 
           <div className="text-center text-xs text-muted-foreground">

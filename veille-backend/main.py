@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
 from db import supabase
-from models import TriggerCallResponse
+from models import TriggerCallResponse, SignupRequest, LoginRequest, AuthResponse
+from services.auth_service import hash_password, verify_password, create_token
 from services.dust_service import trigger_post_call_analysis, trigger_weekly_digest
 from services.twilio_service import create_outbound_call
 from ws.call_handler import handle_twilio_websocket
@@ -36,6 +37,92 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": "veille-backend"}
+
+
+@app.post("/api/auth/signup", response_model=AuthResponse)
+async def signup(req: SignupRequest):
+    """Create a new user account with their loved one's profile."""
+    # Check if email already exists
+    existing = supabase.table("users").select("id").eq("email", req.email).execute()
+    if existing.data:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Create resident (the loved one)
+    resident = supabase.table("residents").insert({
+        "name": req.loved_one_name,
+        "phone": settings.resident_phone,
+        "age": req.loved_one_age,
+    }).execute()
+    resident_id = resident.data[0]["id"]
+
+    # Create user
+    user = supabase.table("users").insert({
+        "email": req.email,
+        "password_hash": hash_password(req.password),
+        "name": req.name,
+        "resident_id": resident_id,
+    }).execute()
+    user_id = user.data[0]["id"]
+
+    # Create family member link
+    supabase.table("family_members").insert({
+        "resident_id": resident_id,
+        "name": req.name,
+        "phone": settings.family_phone or "",
+        "relationship": req.relationship,
+    }).execute()
+
+    token = create_token(user_id, resident_id)
+    return AuthResponse(token=token, user_id=user_id, resident_id=resident_id, name=req.name)
+
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+async def login(req: LoginRequest):
+    """Log in with email and password."""
+    result = supabase.table("users").select("*").eq("email", req.email).execute()
+    if not result.data:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    user = result.data[0]
+    if not verify_password(req.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    token = create_token(user["id"], user["resident_id"])
+    return AuthResponse(
+        token=token,
+        user_id=user["id"],
+        resident_id=user["resident_id"],
+        name=user["name"],
+    )
+
+
+@app.get("/api/auth/me")
+async def get_me(token: str):
+    """Get current user info + resident info from token."""
+    from services.auth_service import decode_token
+    try:
+        payload = decode_token(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = supabase.table("users").select("*").eq("id", payload["user_id"]).execute()
+    resident = supabase.table("residents").select("*").eq("id", payload["resident_id"]).execute()
+
+    if not user.data or not resident.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "user": {
+            "id": user.data[0]["id"],
+            "name": user.data[0]["name"],
+            "email": user.data[0]["email"],
+        },
+        "resident": {
+            "id": resident.data[0]["id"],
+            "name": resident.data[0]["name"],
+            "age": resident.data[0].get("age"),
+        },
+    }
 
 
 @app.post("/api/call/trigger", response_model=TriggerCallResponse)

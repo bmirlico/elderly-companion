@@ -1,10 +1,52 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { User, Users, Calendar, Languages, Bell } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { authApi, storeAuth } from "@/api/client";
+import { useToast } from "@/hooks/use-toast";
 
 const topics = ["Family", "Health", "Food", "Memories", "Neighbors", "Hobbies"];
 
 export default function Signup() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  // User fields
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Loved one fields
+  const [lovedOneName, setLovedOneName] = useState("");
+  const [lovedOneAge, setLovedOneAge] = useState("");
+  const [relationship, setRelationship] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lovedOneName || !lovedOneAge) {
+      toast({ title: "Missing info", description: "Please fill in your loved one's name and age", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authApi.signup({
+        email,
+        password,
+        name,
+        loved_one_name: lovedOneName,
+        loved_one_age: parseInt(lovedOneAge),
+        relationship: relationship || "family",
+      });
+      storeAuth(res.token, { name: res.name, resident_id: res.resident_id, user_id: res.user_id });
+      navigate("/");
+    } catch {
+      toast({ title: "Signup failed", description: "Could not create account. Email may already be in use.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-[#F7F3FF] to-[#EAF7FF] px-5 py-10">
       <div className="max-w-md mx-auto">
@@ -24,6 +66,7 @@ export default function Signup() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
           className="space-y-6"
+          onSubmit={handleSubmit}
         >
           <section className="rounded-3xl bg-card shadow-veille p-6 space-y-4">
             <div className="flex items-center gap-2">
@@ -36,6 +79,9 @@ export default function Signup() {
               <input
                 type="text"
                 placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </label>
@@ -45,6 +91,9 @@ export default function Signup() {
               <input
                 type="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </label>
@@ -54,6 +103,9 @@ export default function Signup() {
               <input
                 type="password"
                 placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </label>
@@ -70,6 +122,9 @@ export default function Signup() {
               <input
                 type="text"
                 placeholder="e.g., Marie Dupont"
+                value={lovedOneName}
+                onChange={(e) => setLovedOneName(e.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </label>
@@ -80,6 +135,9 @@ export default function Signup() {
                 <input
                   type="number"
                   placeholder="78"
+                  value={lovedOneAge}
+                  onChange={(e) => setLovedOneAge(e.target.value)}
+                  required
                   className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </label>
@@ -88,6 +146,8 @@ export default function Signup() {
                 <input
                   type="text"
                   placeholder="Mother"
+                  value={relationship}
+                  onChange={(e) => setRelationship(e.target.value)}
                   className="mt-2 w-full rounded-2xl border border-border/60 bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
               </label>
@@ -145,8 +205,12 @@ export default function Signup() {
             </div>
           </section>
 
-          <button className="w-full rounded-2xl bg-primary text-primary-foreground py-3 text-sm font-semibold">
-            Create account
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-primary text-primary-foreground py-3 text-sm font-semibold disabled:opacity-50"
+          >
+            {loading ? "Creating account..." : "Create account"}
           </button>
 
           <div className="text-center text-xs text-muted-foreground">

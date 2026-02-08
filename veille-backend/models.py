@@ -70,3 +70,26 @@ class TriggerCallResponse(BaseModel):
     twilio_call_sid: str
     status: str
     message: str
+
+
+# --- Auth models ---
+
+class SignupRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+    loved_one_name: str
+    loved_one_age: int
+    relationship: str = "family"
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user_id: str
+    resident_id: str
+    name: str

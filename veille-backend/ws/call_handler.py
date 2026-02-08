@@ -14,6 +14,7 @@ from services.dust_service import trigger_post_call_analysis
 from services.gradium_service import STTSession, text_to_speech_stream
 from services.openai_service import (
     COMPANION_SYSTEM_PROMPT,
+    build_system_prompt,
     get_companion_response,
 )
 from services.twilio_service import end_call
@@ -52,6 +53,7 @@ class CallSession:
         self.conversation_history: list[dict] = [
             {"role": "system", "content": COMPANION_SYSTEM_PROMPT}
         ]
+        self.resident_name: str = "Marie"
         self.turn_count: int = 0
         self.call_start_time: Optional[float] = None
         self._is_active: bool = False
@@ -76,15 +78,32 @@ class CallSession:
         # Link WebSocket session to DB call record
         result = (
             supabase.table("calls")
-            .select("id")
+            .select("id, resident_id")
             .eq("twilio_call_sid", self.call_sid)
             .execute()
         )
         if result.data:
             self.call_id = result.data[0]["id"]
+            resident_id = result.data[0]["resident_id"]
             supabase.table("calls").update({"status": "in_progress"}).eq(
                 "id", self.call_id
             ).execute()
+
+            # Fetch resident info for dynamic prompt
+            resident = (
+                supabase.table("residents")
+                .select("name, age")
+                .eq("id", resident_id)
+                .execute()
+            )
+            if resident.data:
+                r = resident.data[0]
+                self.resident_name = r["name"].split()[0]  # first name only
+                age = r.get("age", 82)
+                prompt = build_system_prompt(self.resident_name, age)
+                self.conversation_history = [
+                    {"role": "system", "content": prompt}
+                ]
 
         # Register turn-end callback
         self.stt_session.set_on_turn_end(self._on_user_turn_end)
@@ -94,7 +113,7 @@ class CallSession:
 
         # Send initial greeting (non-blocking so media events can flow immediately)
         asyncio.create_task(self._generate_and_speak(
-            "(Marie just picked up the phone. Start the conversation with a warm greeting.)"
+            f"({self.resident_name} just picked up the phone. Start the conversation with a warm greeting.)"
         ))
 
     async def handle_media(self, message: dict):
@@ -198,7 +217,7 @@ class CallSession:
         if should_end:
             logger.info(f"Ending call (turns={self.turn_count}, elapsed={elapsed:.0f}s)")
             await self._generate_and_speak(
-                f"{user_text}\n\n(This is your last response. Say goodbye warmly to Marie, wish her a lovely day, and end the conversation.)"
+                f"{user_text}\n\n(This is your last response. Say goodbye warmly to {self.resident_name}, wish her a lovely day, and end the conversation.)"
             )
             await self._hang_up()
         else:

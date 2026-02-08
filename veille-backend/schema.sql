@@ -50,6 +50,18 @@ CREATE TABLE analyses (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Users (family members who log in to the app)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  name TEXT NOT NULL,
+  resident_id UUID REFERENCES residents(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_email ON users(email);
+
 -- Indexes for dashboard queries
 CREATE INDEX idx_analyses_created_at ON analyses(created_at DESC);
 CREATE INDEX idx_analyses_resident_id ON analyses(resident_id);

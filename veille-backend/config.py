@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     family_phone: str = ""
     resident_phone: str
 
+    # Auth
+    jwt_secret: str = "veille-hackathon-secret-change-me"
+
     # Demo resident UUID (hardcoded for hackathon)
     resident_id: str = "11111111-1111-1111-1111-111111111111"
 
